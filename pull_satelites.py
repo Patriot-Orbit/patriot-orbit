@@ -3,7 +3,10 @@ import pandas as pd
 import json
 
 # Replace with your Space-Track email and password
-st = SpaceTrackClient('YOUR_EMAIL', 'YOUR_PASSWORD')
+import os
+email = os.getenv('SPACETRACK_EMAIL')
+password = os.getenv('SPACETRACK_PASSWORD')
+st = SpaceTrackClient(email, password)
 
 # Change this to any constellation: YAOGAN, QIANFAN, BEIDOU, FENGYUN, GLONASS, etc.
 constellation = 'YAOGAN'
