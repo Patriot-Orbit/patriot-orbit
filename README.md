@@ -1,16 +1,26 @@
 # Patriot Orbit
 
-Open-source space intelligence project focused on tracking and analyzing satellite constellations using public TLE data from Space-Track.
+Automated open-source space domain awareness tool that pulls public TLE data and generates daily commentary on Chinese, Russian, and North Korean satellite activity.
 
-## Current Features
-- Pulls live orbital data for Chinese, Russian and other constellations (Yaogan, Qianfan, Beidou, Fengyun, Glonass, etc.)
-- Exports clean CSV files for analysis
-- Manual pattern tracking (debris, triplets, fresh epochs)
+## What It Does
 
-## How to Run
-1. Install dependencies: `pip install spacetrack pandas`
-2. Edit `pull_satellites.py` with your Space-Track credentials
-3. Change the constellation name and run: `python3 pull_satellites.py`
+- Pulls live orbital data from Space-Track for major constellations
+- Combines everything into one master file: `MASTER_ALL_SPACE_OBJECTS.csv`
+- Generates a readable summary in `AUTO_NOTES.txt` focused on:
+  - Chinese satellites (Yaogan, Beidou, Gaofen, etc.)
+  - Russian satellites
+  - North Korean objects
+- Runs automatically every 5 hours via GitHub Actions
 
-## Goal
-Build a simple open-source tool for space domain awareness, with future plans for AI-powered analysis and visualization.
+## Files
+
+- `pull_and_analyze.py` — main script that pulls data and writes notes
+- `MASTER_ALL_SPACE_OBJECTS.csv` — full combined dataset
+- `AUTO_NOTES.txt` — latest commentary
+- `.github/workflows/` — automation
+
+## How to Run Locally
+
+```bash
+pip install -r requirements.txt
+python3 pull_and_analyze.py
