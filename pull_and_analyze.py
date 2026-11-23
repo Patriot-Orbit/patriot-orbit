@@ -1,91 +1,69 @@
-import os
-import pandas as pd
 from spacetrack import SpaceTrackClient
+import pandas as pd
 import json
-from datetime import datetime, timezone
+from datetime import datetime
 
-user = os.getenv('SPACETRACK_USER')
-password = os.getenv('SPACETRACK_PASS')
-if not user or not password:
-    raise ValueError("Missing credentials")
+st = SpaceTrackClient('bradenrbailey02@gmail.com', 'Uscuscusc9777!!!')
 
-st = SpaceTrackClient(user, password)
-
-targets = [
-    ('~~YAOGAN~~', 'yaogan'),
-    ('~~QIANFAN~~', 'qianfan'),
-    ('~~BEIDOU~~', 'beidou'),
-    ('~~GAOFEN~~', 'gaofen'),
-    ('~~FENGYUN~~', 'fengyun'),
-    ('~~GUOWANG~~', 'guowang'),
-    ('~~HAIYANG~~', 'haiyang'),
-    ('~~JILIN~~', 'jilin'),
-    ('~~TIANHUI~~', 'tianhui'),
-    ('~~YUNHAI~~', 'yunhai'),
-    ('~~GLONASS~~', 'glonass'),
-    ('~~COSMOS~~', 'cosmos'),
-    ('~~METEOR~~', 'meteor'),
-    ('~~RESURS~~', 'resurs'),
-    ('~~MALLIGYONG~~', 'malligyong'),
-    ('~~KWANGMYONGSONG~~', 'kwangmyongsong'),
+constellations = [
+    '~~YAOGAN~~', '~~BEIDOU~~', '~~GAOFEN~~', '~~QIANFAN~~',
+    '~~FENGYUN~~', '~~HAIYANG~~', '~~JILIN~~', '~~TIANHUI~~',
+    '~~GLONASS~~', '~~COSMOS~~', '~~KANOPUS~~', '~~RESURS~~',
+    '~~KWANGMYONGSONG~~', '~~MALLIGYONG~~'
 ]
 
-dfs = []
-for query, source in targets:
+all_dfs = []
+
+for name in constellations:
     try:
-        print(f"Pulling {source}...")
-        data = st.gp(object_name=query, format='json')
-        sats = json.loads(data)
-        if sats:
-            df = pd.DataFrame(sats)
-            df['SOURCE'] = source
-            dfs.append(df)
-            print(f"  {len(df)} objects")
+        data = st.gp(object_name=name, format='json')
+        satellites = json.loads(data)
+        df = pd.DataFrame(satellites)
+        if not df.empty:
+            df['CONSTELLATION'] = name.replace('~~', '')
+            all_dfs.append(df)
+            print(f"Pulled {len(df)} for {name}")
     except Exception as e:
-        print(f"  Skipped {source}: {e}")
+        print(f"Error on {name}: {e}")
 
-if not dfs:
-    raise SystemExit("No data pulled")
+if all_dfs:
+    master = pd.concat(all_dfs, ignore_index=True)
+    master.to_csv('MASTER_ALL_SPACE_OBJECTS.csv', index=False)
+    print(f"Saved master with {len(master)} objects")
 
-master = pd.concat(dfs, ignore_index=True)
-master['EPOCH'] = pd.to_datetime(master['EPOCH'], errors='coerce', utc=True)
-now = datetime.now(timezone.utc)
-master = master[master['EPOCH'] <= now + pd.Timedelta(hours=6)]
-master = master.drop_duplicates(subset=['NORAD_CAT_ID'], keep='last')
-master['hours_old'] = (now - master['EPOCH']).dt.total_seconds() / 3600
+    # Commentary
+    notes = []
+    notes.append(f"Patriot Orbit Update — {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n")
 
-master.to_csv('MASTER_ALL_SPACE_OBJECTS.csv', index=False)
-print(f"Master saved: {len(master)} unique objects")
+    # Chinese
+    china = master[master['CONSTELLATION'].isin(['YAOGAN', 'BEIDOU', 'GAOFEN', 'QIANFAN', 'FENGYUN', 'HAIYANG', 'JILIN', 'TIANHUI'])]
+    notes.append(f"Chinese Activity: {len(china)} objects tracked.")
+    if not china.empty:
+        recent = china[china['EPOCH'] > '2026-11-20']
+        notes.append(f"- {len(recent)} have fresh epochs in the last few days.")
+        yaogan = china[china['CONSTELLATION'] == 'YAOGAN']
+        notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
+        notes.append("")
 
-# Automatic commentary
-notes = []
-notes.append(f"Patriot Orbit Auto-Analysis — {now.strftime('%Y-%m-%d %H:%M UTC')}")
-notes.append(f"Total unique objects: {len(master)}")
+    # Russian
+    russia = master[master['CONSTELLATION'].isin(['GLONASS', 'COSMOS', 'KANOPUS', 'RESURS'])]
+    notes.append(f"Russian Activity: {len(russia)} objects tracked.")
+    if not russia.empty:
+        notes.append(f"- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
+        notes.append("")
 
-chinese_sources = ['yaogan', 'qianfan', 'beidou', 'gaofen', 'fengyun', 'guowang', 'haiyang', 'jilin', 'tianhui', 'yunhai']
-chinese = master[master['SOURCE'].isin(chinese_sources)]
-fresh_chinese = chinese[chinese['hours_old'] <= 48]
-notes.append(f"\nCHINESE: {len(chinese)} objects, {len(fresh_chinese)} fresh (48h)")
-if len(fresh_chinese) > 0:
-    top = fresh_chinese.sort_values('hours_old').head(5)
-    notes.append("Recent Chinese activity:")
-    for _, row in top.iterrows():
-        notes.append(f"  - {row['OBJECT_NAME']} ({row['NORAD_CAT_ID']}) | {row['SOURCE']} | {row['hours_old']:.1f}h old")
+    # North Korea
+    nk = master[master['CONSTELLATION'].isin(['KWANGMYONGSONG', 'MALLIGYONG'])]
+    notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
+    if not nk.empty:
+        notes.append("- Limited public TLE coverage on known launches.")
+        notes.append("")
 
-russian_sources = ['glonass', 'cosmos', 'meteor', 'resurs']
-russian = master[master['SOURCE'].isin(russian_sources)]
-fresh_russian = russian[russian['hours_old'] <= 48]
-notes.append(f"\nRUSSIAN: {len(russian)} objects, {len(fresh_russian)} fresh (48h)")
+    notes.append(f"Total objects in master file: {len(master)}")
 
-nk = master[master['SOURCE'].isin(['malligyong', 'kwangmyongsong'])]
-notes.append(f"\nNORTH KOREAN: {len(nk)} objects tracked")
-if len(nk) > 0:
-    for _, row in nk.iterrows():
-        notes.append(f"  - {row['OBJECT_NAME']} ({row['NORAD_CAT_ID']})")
+    with open('AUTO_NOTES.txt', 'w') as f:
+        f.write('\n'.join(notes))
 
-debris = master[master['OBJECT_NAME'].str.contains('DEB', case=False, na=False)]
-notes.append(f"\nDebris objects: {len(debris)}")
-
-with open('AUTO_NOTES.txt', 'w') as f:
-    f.write('\n'.join(notes))
-print("Notes written to AUTO_NOTES.txt")
+    print("AUTO_NOTES.txt updated")
+else:
+    print("No data pulled")
