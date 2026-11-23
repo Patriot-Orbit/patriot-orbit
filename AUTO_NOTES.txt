@@ -1,0 +1,17 @@
+Patriot Orbit Auto-Analysis — 2026-11-23 15:05 UTC
+Total unique objects: 17730
+
+CHINESE: 4356 objects, 2174 fresh (48h)
+Recent Chinese activity:
+  - BEIDOU 3G1 (43683) | beidou | 6.8h old
+  - YAOGAN 14 (38257) | yaogan | 6.8h old
+  - GAOFEN 11 2 (46396) | gaofen | 6.9h old
+  - YAOGAN-35 04B (53524) | yaogan | 7.0h old
+  - BEIDOU 3M20 (44865) | beidou | 7.1h old
+
+RUSSIAN: 13373 objects, 2666 fresh (48h)
+
+NORTH KOREAN: 1 objects tracked
+  - MALLIGYONG-1 (58400)
+
+Debris objects: 14221
