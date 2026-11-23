@@ -1,7 +1,7 @@
-Patriot Orbit Update — 2026-11-23 22:32 UTC
+Patriot Orbit Update — 2026-11-23 23:31 UTC
 
 Chinese Activity: 4326 objects tracked.
-- 2437 have fresh epochs in the last few days.
+- 2445 have fresh epochs in the last few days.
 - Yaogan: 290 objects (includes known debris and triplets).
 
 Russian Activity: 13123 objects tracked.
