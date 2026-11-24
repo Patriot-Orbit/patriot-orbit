@@ -55,7 +55,6 @@ for name in constellations:
     except Exception as e:
         print(f"Error on {name}: {e}")
 
-# Always build notes, even if no data was pulled
 notes = []
 now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
 notes.append(f"Patriot Orbit Update — {now_str}\n")
@@ -135,8 +134,37 @@ if all_dfs:
 
     notes.append(f"Total objects in master file: {len(master)}")
 else:
-    notes.append("No data pulled this run (possible Space-Track rate limit or temporary issue).\n")
-    notes.append("Previous data remains in place.")
+    # Rate-limited or no data — keep previous numbers
+    notes.append("No new data pulled this run (Space-Track rate limit or temporary issue).\n")
+    notes.append("Showing last successful pull:\n")
+
+    if previous is not None and not previous.empty:
+        china = previous[previous['COUNTRY_CODE'] == 'PRC'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
+        russia = previous[previous['COUNTRY_CODE'] == 'CIS'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
+        nk = previous[previous['COUNTRY_CODE'] == 'NKOR'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
+        iran = previous[previous['COUNTRY_CODE'] == 'IRAN'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
+
+        notes.append(f"Chinese Activity: {len(china)} objects tracked.")
+        if not china.empty and 'CONSTELLATION' in china.columns:
+            yaogan = china[china['CONSTELLATION'] == 'YAOGAN']
+            notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
+        notes.append("")
+
+        notes.append(f"Russian Activity: {len(russia)} objects tracked.")
+        notes.append("- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
+        notes.append("")
+
+        notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
+        notes.append("- Malligyong-1 remains the primary active object.")
+        notes.append("")
+
+        notes.append(f"Iranian Activity: {len(iran)} objects tracked.")
+        notes.append("- Includes Noor military satellites and related objects.")
+        notes.append("")
+
+        notes.append(f"Total objects in master file: {len(previous)}")
+    else:
+        notes.append("No previous data available.")
 
 with open('AUTO_NOTES.txt', 'w') as f:
     f.write('\n'.join(notes))
