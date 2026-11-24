@@ -48,7 +48,6 @@ for name in constellations:
             df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
             df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
             if not df.empty:
-                # Force NORAD_CAT_ID to string for consistent merging
                 if 'NORAD_CAT_ID' in df.columns:
                     df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
                 all_dfs.append(df)
@@ -56,16 +55,19 @@ for name in constellations:
     except Exception as e:
         print(f"Error on {name}: {e}")
 
+# Always build notes, even if no data was pulled
+notes = []
+now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+notes.append(f"Patriot Orbit Update — {now_str}\n")
+
 if all_dfs:
     master = pd.concat(all_dfs, ignore_index=True)
     master = master[master['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
 
-    # Convert numeric columns for comparison
     for col in ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS']:
         if col in master.columns:
             master[col] = pd.to_numeric(master[col], errors='coerce')
 
-    # Maneuver / change detection
     changes = []
     if previous is not None and not previous.empty and 'NORAD_CAT_ID' in previous.columns:
         for col in ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS']:
@@ -79,7 +81,6 @@ if all_dfs:
             suffixes=('', '_prev')
         )
 
-        # Flag significant changes
         if 'INCLINATION_prev' in merged.columns:
             inc_change = merged[(merged['INCLINATION'] - merged['INCLINATION_prev']).abs() > 0.05]
             for _, row in inc_change.iterrows():
@@ -92,14 +93,9 @@ if all_dfs:
                 if pd.notna(row['MEAN_MOTION']) and pd.notna(row['MEAN_MOTION_prev']):
                     changes.append(f"- {row['OBJECT_NAME']} (NORAD {row['NORAD_CAT_ID']}): Mean motion shifted {row['MEAN_MOTION_prev']:.4f} → {row['MEAN_MOTION']:.4f}")
 
-    # Save current as next previous
     master.to_csv(prev_file, index=False)
     master.to_csv('MASTER_ALL_SPACE_OBJECTS.csv', index=False)
     print(f"Saved master with {len(master)} objects")
-
-    # Build notes
-    notes = []
-    notes.append(f"Patriot Orbit Update — {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n")
 
     if changes:
         notes.append("Significant Orbital Changes Detected:")
@@ -138,10 +134,11 @@ if all_dfs:
         notes.append("")
 
     notes.append(f"Total objects in master file: {len(master)}")
-
-    with open('AUTO_NOTES.txt', 'w') as f:
-        f.write('\n'.join(notes))
-
-    print("AUTO_NOTES.txt updated")
 else:
-    print("No data pulled")
+    notes.append("No data pulled this run (possible Space-Track rate limit or temporary issue).\n")
+    notes.append("Previous data remains in place.")
+
+with open('AUTO_NOTES.txt', 'w') as f:
+    f.write('\n'.join(notes))
+
+print("AUTO_NOTES.txt updated")
