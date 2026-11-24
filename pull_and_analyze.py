@@ -9,7 +9,8 @@ constellations = [
     '~~YAOGAN~~', '~~BEIDOU~~', '~~GAOFEN~~', '~~QIANFAN~~',
     '~~FENGYUN~~', '~~HAIYANG~~', '~~JILIN~~', '~~TIANHUI~~',
     '~~GLONASS~~', '~~COSMOS~~', '~~KANOPUS~~', '~~RESURS~~',
-    '~~KWANGMYONGSONG~~', '~~MALLIGYONG~~'
+    '~~KWANGMYONGSONG~~', '~~MALLIGYONG~~',
+    '~~NOOR~~', '~~KHAYYAM~~', '~~SAFIR~~'
 ]
 
 all_dfs = []
@@ -57,6 +58,13 @@ if all_dfs:
     notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
     if not nk.empty:
         notes.append("- Limited public TLE coverage on known launches.")
+        notes.append("")
+
+    # Iran
+    iran = master[master['CONSTELLATION'].isin(['NOOR', 'KHAYYAM', 'SAFIR'])]
+    notes.append(f"Iranian Activity: {len(iran)} objects tracked.")
+    if not iran.empty:
+        notes.append("- Includes Noor military satellites and related objects.")
         notes.append("")
 
     notes.append(f"Total objects in master file: {len(master)}")
