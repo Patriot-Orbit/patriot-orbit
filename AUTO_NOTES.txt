@@ -1,18 +1,5 @@
-Patriot Orbit Update — 2026-11-24 19:16 UTC
+Patriot Orbit Update — 2026-11-24 22:47 UTC
 
-No significant orbital changes detected this run.
+No data pulled this run (possible Space-Track rate limit or temporary issue).
 
-Chinese Activity: 4326 objects tracked.
-- 2462 have fresh epochs in the last few days.
-- Yaogan: 290 objects (includes known debris and triplets).
-
-Russian Activity: 13123 objects tracked.
-- Includes GLONASS navigation and COSMOS reconnaissance satellites.
-
-North Korean Activity: 1 objects tracked.
-- Malligyong-1 remains the primary active object.
-
-Iranian Activity: 9 objects tracked.
-- Includes Noor military satellites and related objects.
-
-Total objects in master file: 17459
+Previous data remains in place.
