@@ -1,4 +1,4 @@
-Patriot Orbit Update — 2026-11-24 17:38 UTC
+Patriot Orbit Update — 2026-11-24 18:00 UTC
 
 Chinese Activity: 4326 objects tracked.
 - 2462 have fresh epochs in the last few days.
@@ -8,7 +8,7 @@ Russian Activity: 13123 objects tracked.
 - Includes GLONASS navigation and COSMOS reconnaissance satellites.
 
 North Korean Activity: 1 objects tracked.
-- Limited public TLE coverage on known launches.
+- Malligyong-1 remains the primary active object.
 
 Iranian Activity: 9 objects tracked.
 - Includes Noor military satellites and related objects.
