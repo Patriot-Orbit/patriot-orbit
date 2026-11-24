@@ -1,4 +1,4 @@
-Patriot Orbit Update — 2026-11-24 16:21 UTC
+Patriot Orbit Update — 2026-11-24 17:21 UTC
 
 Chinese Activity: 4326 objects tracked.
 - 2462 have fresh epochs in the last few days.
@@ -10,4 +10,7 @@ Russian Activity: 13123 objects tracked.
 North Korean Activity: 1 objects tracked.
 - Limited public TLE coverage on known launches.
 
-Total objects in master file: 17450
+Iranian Activity: 9 objects tracked.
+- Includes Noor military satellites and related objects.
+
+Total objects in master file: 17459
