@@ -1,6 +1,6 @@
 # Patriot Orbit
 
-Automated open-source space domain awareness tool that pulls public TLE data and generates daily commentary on Chinese, Russian, and North Korean satellite activity.
+Automated open-source space domain awareness tool that pulls public TLE data and generates daily commentary on Chinese, Russian, North Korean, and Iranian satellite activity.
 
 ## What It Does
 
@@ -10,7 +10,8 @@ Automated open-source space domain awareness tool that pulls public TLE data and
   - Chinese satellites (Yaogan, Beidou, Gaofen, etc.)
   - Russian satellites
   - North Korean objects
-- Runs automatically every 5 hours via GitHub Actions
+  - Iranian satellites
+- Runs automatically every 15-20 minutes via GitHub Actions
 
 ## Files
 
