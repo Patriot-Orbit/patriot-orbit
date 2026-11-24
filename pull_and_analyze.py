@@ -30,6 +30,8 @@ previous = None
 if os.path.exists(prev_file):
     try:
         previous = pd.read_csv(prev_file)
+        if 'NORAD_CAT_ID' in previous.columns:
+            previous['NORAD_CAT_ID'] = previous['NORAD_CAT_ID'].astype(str)
     except:
         previous = None
 
@@ -46,6 +48,9 @@ for name in constellations:
             df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
             df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
             if not df.empty:
+                # Force NORAD_CAT_ID to string for consistent merging
+                if 'NORAD_CAT_ID' in df.columns:
+                    df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
                 all_dfs.append(df)
                 print(f"Pulled {len(df)} for {name}")
     except Exception as e:
@@ -62,7 +67,7 @@ if all_dfs:
 
     # Maneuver / change detection
     changes = []
-    if previous is not None and not previous.empty:
+    if previous is not None and not previous.empty and 'NORAD_CAT_ID' in previous.columns:
         for col in ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS']:
             if col in previous.columns:
                 previous[col] = pd.to_numeric(previous[col], errors='coerce')
@@ -75,17 +80,17 @@ if all_dfs:
         )
 
         # Flag significant changes
-        # Inclination change > 0.05 deg
         if 'INCLINATION_prev' in merged.columns:
             inc_change = merged[(merged['INCLINATION'] - merged['INCLINATION_prev']).abs() > 0.05]
             for _, row in inc_change.iterrows():
-                changes.append(f"- {row['OBJECT_NAME']} (NORAD {row['NORAD_CAT_ID']}): Inclination shifted {row['INCLINATION_prev']:.2f}° → {row['INCLINATION']:.2f}°")
+                if pd.notna(row['INCLINATION']) and pd.notna(row['INCLINATION_prev']):
+                    changes.append(f"- {row['OBJECT_NAME']} (NORAD {row['NORAD_CAT_ID']}): Inclination shifted {row['INCLINATION_prev']:.2f}° → {row['INCLINATION']:.2f}°")
 
-        # Mean motion change > 0.001 rev/day (rough altitude proxy)
         if 'MEAN_MOTION_prev' in merged.columns:
             mm_change = merged[(merged['MEAN_MOTION'] - merged['MEAN_MOTION_prev']).abs() > 0.001]
             for _, row in mm_change.iterrows():
-                changes.append(f"- {row['OBJECT_NAME']} (NORAD {row['NORAD_CAT_ID']}): Mean motion shifted {row['MEAN_MOTION_prev']:.4f} → {row['MEAN_MOTION']:.4f}")
+                if pd.notna(row['MEAN_MOTION']) and pd.notna(row['MEAN_MOTION_prev']):
+                    changes.append(f"- {row['OBJECT_NAME']} (NORAD {row['NORAD_CAT_ID']}): Mean motion shifted {row['MEAN_MOTION_prev']:.4f} → {row['MEAN_MOTION']:.4f}")
 
     # Save current as next previous
     master.to_csv(prev_file, index=False)
@@ -98,10 +103,12 @@ if all_dfs:
 
     if changes:
         notes.append("Significant Orbital Changes Detected:")
-        notes.extend(changes[:15])  # Limit to top 15 to keep notes readable
+        notes.extend(changes[:15])
         if len(changes) > 15:
             notes.append(f"- ...and {len(changes) - 15} more changes")
         notes.append("")
+    else:
+        notes.append("No significant orbital changes detected this run.\n")
 
     china = master[master['COUNTRY_CODE'] == 'PRC']
     notes.append(f"Chinese Activity: {len(china)} objects tracked.")
