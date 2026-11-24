@@ -219,6 +219,21 @@
       border-radius: 6px;
       font-size: 14px;
     }
+    .alerts {
+      text-align: center;
+      margin: 10px 0 30px;
+    }
+    .alerts a {
+      display: inline-block;
+      background: linear-gradient(135deg, #b91c1c, #1e40af);
+      color: white;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -229,6 +244,10 @@
   </header>
 
   <main>
+    <div class="alerts">
+      <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Get Alerts</a>
+    </div>
+
     <div class="stats" id="stats"></div>
 
     <h2>Latest Activity Notes</h2>
@@ -270,13 +289,12 @@
 
     <h2>About</h2>
     <div class="about">
-      Patriot Orbit automatically tracks public TLE data on Chinese, Russian, North Korean, and Iranian satellites. It updates every 15 minutes with activity notes, orbital changes, and a searchable catalog of objects. Fully open source.
+      Patriot Orbit is an open-source space domain awareness project that automatically tracks and summarizes public TLE data on adversary satellite activity. It updates regularly with notes on Chinese, Russian, North Korean, and Iranian objects, including debris, fresh epochs, and constellation activity.
     </div>
   </main>
 
   <footer>
-    Patriot Orbit · Open Source Space Domain Awareness<br>
-    <a href="https://github.com/Patriot-Orbit/patriot-orbit" style="color:#9ca3af; text-decoration:none;">View on GitHub</a>
+    Patriot Orbit · Open Source Space Domain Awareness
   </footer>
 
   <script>
@@ -296,12 +314,6 @@
         if (!line) return;
         if (line.startsWith('Patriot Orbit Update')) {
           html += `<div class="update-time">${line}</div>`;
-        } else if (line.includes('Significant Orbital Changes') || line.includes('No significant orbital changes')) {
-          if (currentSection) html += '</ul></div>';
-          currentSection = '';
-          html += `<div class="section"><div class="section-title">${line}</div>`;
-          if (line.includes('Significant Orbital Changes')) html += '<ul>';
-          else html += '</div>';
         } else if (line.includes('Activity:')) {
           if (currentSection) html += '</ul></div>';
           currentSection = line.replace(':', '');
@@ -367,11 +379,10 @@
       const country = document.getElementById('country').value;
       const constel = document.getElementById('constellation').value;
       const filtered = allObjects.filter(o => {
-        const nameMatch = (o.OBJECT_NAME || '').toLowerCase().includes(search);
-        const noradMatch = (o.NORAD_CAT_ID || '').toLowerCase().includes(search);
+        const nameMatch = (o.OBJECT_NAME || '').toLowerCase().includes(search) || (o.NORAD_CAT_ID || '').toString().includes(search);
         const countryMatch = !country || o.COUNTRY_CODE === country;
         const constelMatch = !constel || o.CONSTELLATION === constel;
-        return (nameMatch || noradMatch) && countryMatch && constelMatch;
+        return nameMatch && countryMatch && constelMatch;
       });
       renderTable(filtered);
     }
