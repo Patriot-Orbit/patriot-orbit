@@ -21,6 +21,8 @@ country_map = {
     'NOOR': 'IRAN', 'KHAYYAM': 'IRAN', 'SAFIR': 'IRAN'
 }
 
+ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
+
 all_dfs = []
 
 for name in constellations:
@@ -32,13 +34,18 @@ for name in constellations:
             clean_name = name.replace('~~', '')
             df['CONSTELLATION'] = clean_name
             df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
-            all_dfs.append(df)
-            print(f"Pulled {len(df)} for {name}")
+            # Keep only the four countries we care about
+            df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
+            if not df.empty:
+                all_dfs.append(df)
+                print(f"Pulled {len(df)} for {name}")
     except Exception as e:
         print(f"Error on {name}: {e}")
 
 if all_dfs:
     master = pd.concat(all_dfs, ignore_index=True)
+    # Final filter just in case
+    master = master[master['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
     master.to_csv('MASTER_ALL_SPACE_OBJECTS.csv', index=False)
     print(f"Saved master with {len(master)} objects")
 
