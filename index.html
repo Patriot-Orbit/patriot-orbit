@@ -11,6 +11,11 @@
       background: #000 url('background.jpg') center/cover no-repeat fixed;
       color: #e8eef7;
       min-height: 100vh;
+      transition: background 0.3s;
+    }
+    body.light {
+      background: #f4f6f9 url('background.jpg') center/cover no-repeat fixed;
+      color: #1f2937;
     }
     body::before {
       content: "";
@@ -19,85 +24,179 @@
       background: rgba(0, 5, 15, 0.55);
       z-index: -1;
     }
+    body.light::before {
+      background: rgba(255, 255, 255, 0.75);
+    }
     header {
       text-align: center;
-      padding: 50px 20px 30px;
+      padding: 40px 20px 20px;
+      position: relative;
     }
     header img {
-      width: 320px;
+      width: 280px;
       max-width: 90%;
       height: auto;
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
     }
     .tagline {
-      margin-top: 14px;
-      font-size: 15px;
+      margin-top: 12px;
+      font-size: 14px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       color: #c0c8d4;
       font-weight: 500;
     }
+    .dark-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    body.light .dark-toggle {
+      background: rgba(0,0,0,0.1);
+      color: #1f2937;
+    }
     main {
-      max-width: 860px;
+      max-width: 1000px;
       margin: 0 auto;
-      padding: 20px 20px 80px;
+      padding: 10px 20px 80px;
     }
     h2 {
       font-size: 22px;
       font-weight: 600;
-      margin: 40px 0 16px;
+      margin: 36px 0 14px;
       color: #fff;
+    }
+    body.light h2 { color: #111827; }
+    .stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .stat {
+      background: rgba(10, 15, 25, 0.75);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-width: 140px;
+      backdrop-filter: blur(6px);
+    }
+    body.light .stat {
+      background: rgba(255,255,255,0.9);
+      border-color: #e5e7eb;
+    }
+    .stat .num {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+    body.light .stat .num { color: #1e40af; }
+    .stat .label {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 2px;
     }
     .notes {
       background: rgba(10, 15, 25, 0.75);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
-      padding: 28px;
+      padding: 24px;
       backdrop-filter: blur(6px);
       font-size: 15.5px;
       line-height: 1.7;
       box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     }
+    body.light .notes {
+      background: rgba(255,255,255,0.92);
+      border-color: #e5e7eb;
+      color: #1f2937;
+    }
     .notes .update-time {
       font-size: 13px;
       color: #9ca3af;
-      margin-bottom: 18px;
-      letter-spacing: 0.3px;
+      margin-bottom: 16px;
     }
-    .notes .section {
-      margin-bottom: 18px;
-    }
-    .notes .section-title {
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .notes .section ul {
-      margin-left: 20px;
-      margin-top: 4px;
-    }
-    .notes .section li {
-      margin: 3px 0;
-    }
+    .notes .section { margin-bottom: 16px; }
+    .notes .section-title { font-weight: 600; margin-bottom: 4px; }
+    .notes .section ul { margin-left: 20px; margin-top: 4px; }
+    .notes .section li { margin: 3px 0; }
     .notes .total {
-      margin-top: 16px;
-      padding-top: 14px;
+      margin-top: 14px;
+      padding-top: 12px;
       border-top: 1px solid rgba(255,255,255,0.1);
       font-weight: 600;
     }
+    body.light .notes .total { border-top-color: #e5e7eb; }
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .controls input, .controls select {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(10,15,25,0.7);
+      color: #fff;
+      font-size: 14px;
+    }
+    body.light .controls input, body.light .controls select {
+      background: #fff;
+      border-color: #d1d5db;
+      color: #1f2937;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(10, 15, 25, 0.75);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    body.light table {
+      background: rgba(255,255,255,0.92);
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    body.light th, body.light td {
+      border-bottom-color: #e5e7eb;
+    }
+    th {
+      background: rgba(0,0,0,0.3);
+      font-weight: 600;
+    }
+    body.light th { background: #f3f4f6; }
+    tr:hover { background: rgba(255,255,255,0.05); }
+    body.light tr:hover { background: #f9fafb; }
     .about {
       background: rgba(10, 15, 25, 0.65);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 14px;
-      padding: 24px 28px;
+      padding: 20px 24px;
       backdrop-filter: blur(6px);
       font-size: 15px;
       line-height: 1.65;
       color: #d1d5db;
     }
+    body.light .about {
+      background: rgba(255,255,255,0.9);
+      color: #374151;
+      border-color: #e5e7eb;
+    }
     .download {
       display: inline-block;
-      margin-top: 28px;
+      margin-top: 20px;
       background: linear-gradient(135deg, #b91c1c, #1e40af);
       color: white;
       text-decoration: none;
@@ -105,7 +204,6 @@
       border-radius: 8px;
       font-weight: 600;
       letter-spacing: 0.5px;
-      box-shadow: 0 4px 14px rgba(185, 28, 28, 0.3);
     }
     footer {
       text-align: center;
@@ -113,17 +211,58 @@
       font-size: 13px;
       color: #9ca3af;
     }
+    .highlight {
+      background: rgba(185, 28, 28, 0.15);
+      border-left: 3px solid #b91c1c;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <header>
+    <button class="dark-toggle" onclick="toggleDark()">Dark / Light</button>
     <img src="logo.png" alt="Patriot Orbit">
     <div class="tagline">Adversary Space Activity Intelligence</div>
   </header>
 
   <main>
+    <div class="stats" id="stats"></div>
+
     <h2>Latest Activity Notes</h2>
     <div class="notes" id="notes">Loading latest notes...</div>
+
+    <div id="highlight" class="highlight" style="display:none;"></div>
+
+    <h2>Recent Objects</h2>
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search name..." oninput="filterTable()">
+      <select id="country" onchange="filterTable()">
+        <option value="">All Countries</option>
+        <option value="PRC">China (PRC)</option>
+        <option value="CIS">Russia (CIS)</option>
+        <option value="NKOR">North Korea</option>
+      </select>
+      <select id="constellation" onchange="filterTable()">
+        <option value="">All Constellations</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="objects">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Country</th>
+            <th>Constellation</th>
+            <th>Epoch</th>
+            <th>Inclination</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
 
     <a class="download" href="MASTER_ALL_SPACE_OBJECTS.csv">Download Full Master CSV</a>
 
@@ -138,21 +277,25 @@
   </footer>
 
   <script>
+    let allObjects = [];
+    let notesText = '';
+
+    function toggleDark() {
+      document.body.classList.toggle('light');
+    }
+
     function formatNotes(text) {
       if (!text) return 'No notes available yet.';
-
       const lines = text.trim().split('\n');
       let html = '';
       let currentSection = '';
-
       lines.forEach(line => {
         line = line.trim();
         if (!line) return;
-
         if (line.startsWith('Patriot Orbit Update')) {
           html += `<div class="update-time">${line}</div>`;
-        } else if (line.endsWith('Activity:') || line.includes('Activity:')) {
-          if (currentSection) html += '</div>';
+        } else if (line.includes('Activity:')) {
+          if (currentSection) html += '</ul></div>';
           currentSection = line.replace(':', '');
           html += `<div class="section"><div class="section-title">${currentSection}</div><ul>`;
         } else if (line.startsWith('- ')) {
@@ -161,25 +304,107 @@
           if (currentSection) html += '</ul></div>';
           html += `<div class="total">${line}</div>`;
           currentSection = '';
-        } else {
-          if (currentSection) html += '</ul></div>';
-          html += `<div class="section">${line}</div>`;
-          currentSection = '';
         }
       });
-
       if (currentSection) html += '</ul></div>';
       return html || text;
     }
 
-    fetch('AUTO_NOTES.txt')
-      .then(r => r.ok ? r.text() : Promise.reject())
-      .then(text => {
-        document.getElementById('notes').innerHTML = formatNotes(text);
-      })
-      .catch(() => {
-        document.getElementById('notes').textContent = 'Notes file not found or unavailable.';
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      const headers = lines[0].split('|').map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split('|').map(v => v.trim());
+        const obj = {};
+        headers.forEach((h, i) => obj[h] = values[i] || '');
+        return obj;
       });
+    }
+
+    function renderStats() {
+      const total = allObjects.length;
+      const fresh = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return (Date.now() - epoch) < 3 * 24 * 60 * 60 * 1000;
+      }).length;
+      const countries = new Set(allObjects.map(o => o.COUNTRY_CODE).filter(Boolean)).size;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="num">${total.toLocaleString()}</div><div class="label">Total Objects</div></div>
+        <div class="stat"><div class="num">${fresh.toLocaleString()}</div><div class="label">Fresh Epochs (3 days)</div></div>
+        <div class="stat"><div class="num">${countries}</div><div class="label">Countries</div></div>
+      `;
+    }
+
+    function renderTable(objects) {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = objects.slice(0, 100).map(o => `
+        <tr>
+          <td>${o.OBJECT_NAME || ''}</td>
+          <td>${o.COUNTRY_CODE || ''}</td>
+          <td>${o.CONSTELLATION || ''}</td>
+          <td>${(o.EPOCH || '').slice(0, 16)}</td>
+          <td>${o.INCLINATION || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTable() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const country = document.getElementById('country').value;
+      const constel = document.getElementById('constellation').value;
+      const filtered = allObjects.filter(o => {
+        const nameMatch = (o.OBJECT_NAME || '').toLowerCase().includes(search);
+        const countryMatch = !country || o.COUNTRY_CODE === country;
+        const constelMatch = !constel || o.CONSTELLATION === constel;
+        return nameMatch && countryMatch && constelMatch;
+      });
+      renderTable(filtered);
+    }
+
+    function loadConstellations() {
+      const constels = [...new Set(allObjects.map(o => o.CONSTELLATION).filter(Boolean))].sort();
+      const select = document.getElementById('constellation');
+      constels.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+
+    function checkHighlights() {
+      const fresh = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return (Date.now() - epoch) < 24 * 60 * 60 * 1000;
+      });
+      if (fresh.length > 0) {
+        const el = document.getElementById('highlight');
+        el.style.display = 'block';
+        el.innerHTML = `<strong>${fresh.length}</strong> objects have epochs from the last 24 hours.`;
+      }
+    }
+
+    async function loadData() {
+      try {
+        const notesRes = await fetch('AUTO_NOTES.txt');
+        notesText = await notesRes.text();
+        document.getElementById('notes').innerHTML = formatNotes(notesText);
+
+        const csvRes = await fetch('MASTER_ALL_SPACE_OBJECTS.csv');
+        const csvText = await csvRes.text();
+        allObjects = parseCSV(csvText);
+        renderStats();
+        loadConstellations();
+        renderTable(allObjects);
+        checkHighlights();
+      } catch (e) {
+        document.getElementById('notes').textContent = 'Failed to load data.';
+      }
+    }
+
+    loadData();
   </script>
 </body>
 </html>
