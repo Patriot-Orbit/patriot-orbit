@@ -13,6 +13,14 @@ constellations = [
     '~~NOOR~~', '~~KHAYYAM~~', '~~SAFIR~~'
 ]
 
+country_map = {
+    'YAOGAN': 'PRC', 'BEIDOU': 'PRC', 'GAOFEN': 'PRC', 'QIANFAN': 'PRC',
+    'FENGYUN': 'PRC', 'HAIYANG': 'PRC', 'JILIN': 'PRC', 'TIANHUI': 'PRC',
+    'GLONASS': 'CIS', 'COSMOS': 'CIS', 'KANOPUS': 'CIS', 'RESURS': 'CIS',
+    'KWANGMYONGSONG': 'NKOR', 'MALLIGYONG': 'NKOR',
+    'NOOR': 'IRAN', 'KHAYYAM': 'IRAN', 'SAFIR': 'IRAN'
+}
+
 all_dfs = []
 
 for name in constellations:
@@ -21,7 +29,9 @@ for name in constellations:
         satellites = json.loads(data)
         df = pd.DataFrame(satellites)
         if not df.empty:
-            df['CONSTELLATION'] = name.replace('~~', '')
+            clean_name = name.replace('~~', '')
+            df['CONSTELLATION'] = clean_name
+            df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
             all_dfs.append(df)
             print(f"Pulled {len(df)} for {name}")
     except Exception as e:
@@ -32,12 +42,10 @@ if all_dfs:
     master.to_csv('MASTER_ALL_SPACE_OBJECTS.csv', index=False)
     print(f"Saved master with {len(master)} objects")
 
-    # Commentary
     notes = []
     notes.append(f"Patriot Orbit Update — {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n")
 
-    # Chinese
-    china = master[master['CONSTELLATION'].isin(['YAOGAN', 'BEIDOU', 'GAOFEN', 'QIANFAN', 'FENGYUN', 'HAIYANG', 'JILIN', 'TIANHUI'])]
+    china = master[master['COUNTRY_CODE'] == 'PRC']
     notes.append(f"Chinese Activity: {len(china)} objects tracked.")
     if not china.empty:
         recent = china[china['EPOCH'] > '2026-11-20']
@@ -46,22 +54,19 @@ if all_dfs:
         notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
         notes.append("")
 
-    # Russian
-    russia = master[master['CONSTELLATION'].isin(['GLONASS', 'COSMOS', 'KANOPUS', 'RESURS'])]
+    russia = master[master['COUNTRY_CODE'] == 'CIS']
     notes.append(f"Russian Activity: {len(russia)} objects tracked.")
     if not russia.empty:
-        notes.append(f"- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
+        notes.append("- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
         notes.append("")
 
-    # North Korea
-    nk = master[master['CONSTELLATION'].isin(['KWANGMYONGSONG', 'MALLIGYONG'])]
+    nk = master[master['COUNTRY_CODE'] == 'NKOR']
     notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
     if not nk.empty:
         notes.append("- Limited public TLE coverage on known launches.")
         notes.append("")
 
-    # Iran
-    iran = master[master['CONSTELLATION'].isin(['NOOR', 'KHAYYAM', 'SAFIR'])]
+    iran = master[master['COUNTRY_CODE'] == 'IRAN']
     notes.append(f"Iranian Activity: {len(iran)} objects tracked.")
     if not iran.empty:
         notes.append("- Includes Noor military satellites and related objects.")
