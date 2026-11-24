@@ -45,7 +45,7 @@
     h2 {
       font-size: 22px;
       font-weight: 600;
-      margin: 30px 0 16px;
+      margin: 40px 0 16px;
       color: #fff;
     }
     .notes {
@@ -54,11 +54,46 @@
       border-radius: 14px;
       padding: 28px;
       backdrop-filter: blur(6px);
-      font-family: 'SF Mono', Monaco, Consolas, monospace;
+      font-size: 15.5px;
+      line-height: 1.7;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    .notes .update-time {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 18px;
+      letter-spacing: 0.3px;
+    }
+    .notes .section {
+      margin-bottom: 18px;
+    }
+    .notes .section-title {
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .notes .section ul {
+      margin-left: 20px;
+      margin-top: 4px;
+    }
+    .notes .section li {
+      margin: 3px 0;
+    }
+    .notes .total {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-weight: 600;
+    }
+    .about {
+      background: rgba(10, 15, 25, 0.65);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 24px 28px;
+      backdrop-filter: blur(6px);
       font-size: 15px;
       line-height: 1.65;
-      white-space: pre-wrap;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      color: #d1d5db;
     }
     .download {
       display: inline-block;
@@ -89,7 +124,13 @@
   <main>
     <h2>Latest Activity Notes</h2>
     <div class="notes" id="notes">Loading latest notes...</div>
+
     <a class="download" href="MASTER_ALL_SPACE_OBJECTS.csv">Download Full Master CSV</a>
+
+    <h2>About</h2>
+    <div class="about">
+      Patriot Orbit is an open-source space domain awareness project that automatically tracks and summarizes public TLE data on adversary satellite activity. It updates regularly with notes on Chinese, Russian, and North Korean objects, including debris, fresh epochs, and constellation activity.
+    </div>
   </main>
 
   <footer>
@@ -97,10 +138,44 @@
   </footer>
 
   <script>
+    function formatNotes(text) {
+      if (!text) return 'No notes available yet.';
+
+      const lines = text.trim().split('\n');
+      let html = '';
+      let currentSection = '';
+
+      lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+
+        if (line.startsWith('Patriot Orbit Update')) {
+          html += `<div class="update-time">${line}</div>`;
+        } else if (line.endsWith('Activity:') || line.includes('Activity:')) {
+          if (currentSection) html += '</div>';
+          currentSection = line.replace(':', '');
+          html += `<div class="section"><div class="section-title">${currentSection}</div><ul>`;
+        } else if (line.startsWith('- ')) {
+          html += `<li>${line.substring(2)}</li>`;
+        } else if (line.startsWith('Total objects')) {
+          if (currentSection) html += '</ul></div>';
+          html += `<div class="total">${line}</div>`;
+          currentSection = '';
+        } else {
+          if (currentSection) html += '</ul></div>';
+          html += `<div class="section">${line}</div>`;
+          currentSection = '';
+        }
+      });
+
+      if (currentSection) html += '</ul></div>';
+      return html || text;
+    }
+
     fetch('AUTO_NOTES.txt')
       .then(r => r.ok ? r.text() : Promise.reject())
       .then(text => {
-        document.getElementById('notes').textContent = text || 'No notes available yet.';
+        document.getElementById('notes').innerHTML = formatNotes(text);
       })
       .catch(() => {
         document.getElementById('notes').textContent = 'Notes file not found or unavailable.';
