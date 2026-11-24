@@ -294,6 +294,12 @@
         if (!line) return;
         if (line.startsWith('Patriot Orbit Update')) {
           html += `<div class="update-time">${line}</div>`;
+        } else if (line.includes('Significant Orbital Changes') || line.includes('No significant orbital changes')) {
+          if (currentSection) html += '</ul></div>';
+          currentSection = '';
+          html += `<div class="section"><div class="section-title">${line}</div>`;
+          if (line.includes('Significant Orbital Changes')) html += '<ul>';
+          else html += '</div>';
         } else if (line.includes('Activity:')) {
           if (currentSection) html += '</ul></div>';
           currentSection = line.replace(':', '');
