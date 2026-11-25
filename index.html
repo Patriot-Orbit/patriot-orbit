@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Patriot Orbit</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.1.4/satellite.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -103,7 +104,7 @@
       color: #9ca3af;
       margin-top: 2px;
     }
-    .notes, .major-movements {
+    .notes, .major-movements, .position-card {
       background: rgba(10, 15, 25, 0.75);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
@@ -113,7 +114,7 @@
       line-height: 1.7;
       box-shadow: 0 8px 30px rgba(0,0,0,0.5);
     }
-    body.light .notes, body.light .major-movements {
+    body.light .notes, body.light .major-movements, body.light .position-card {
       background: rgba(255,255,255,0.92);
       border-color: #e5e7eb;
       color: #1f2937;
@@ -140,7 +141,7 @@
       flex-wrap: wrap;
       margin: 16px 0;
     }
-    .controls input, .controls select {
+    .controls input, .controls select, .position-card input, .position-card textarea, .position-card button {
       padding: 8px 12px;
       border-radius: 6px;
       border: 1px solid rgba(255,255,255,0.2);
@@ -148,11 +149,35 @@
       color: #fff;
       font-size: 14px;
     }
-    body.light .controls input, body.light .controls select {
+    body.light .controls input, body.light .controls select, body.light .position-card input, body.light .position-card textarea, body.light .position-card button {
       background: #fff;
       border-color: #d1d5db;
       color: #1f2937;
     }
+    .position-card textarea {
+      width: 100%;
+      height: 70px;
+      font-family: monospace;
+      margin-top: 8px;
+    }
+    .position-card button {
+      background: #1f6feb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .position-card button:hover { background: #388bfd; }
+    .pos-result {
+      margin-top: 10px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    body.light .pos-result { background: #f3f4f6; }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -240,17 +265,18 @@
     .major-list li {
       margin: 6px 0;
     }
-    .watch-item {
-      margin: 10px 0;
-      padding: 12px 14px;
-      background: rgba(255,255,255,0.06);
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.08);
+    .watchlist-item {
+      margin: 8px 0;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    body.light .watch-item {
-      background: rgba(0,0,0,0.03);
-      border-color: #e5e7eb;
-    }
+    body.light .watchlist-item { background: #f3f4f6; }
   </style>
 </head>
 <body>
@@ -265,23 +291,21 @@
       <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Get Alerts</a>
     </div>
 
+    <h2>Position Calculator</h2>
+    <div class="position-card" id="position-card">
+      <div id="watchlist-status">Loading watchlist…</div>
+      <div id="watchlist-list"></div>
+      <hr style="border-color:rgba(255,255,255,0.1); margin:16px 0;">
+      <div style="font-weight:600; margin-bottom:6px;">Or paste a TLE</div>
+      <textarea id="tle-input" placeholder="Paste TLE line 1 and line 2 (or full 3-line set)"></textarea>
+      <button onclick="calculateFromPaste()">Calculate Position</button>
+      <div id="paste-result" class="pos-result" style="display:none;"></div>
+    </div>
+
     <div class="stats" id="stats"></div>
 
     <h2>Major Movements</h2>
     <div class="major-movements" id="major-movements">Loading major movements...</div>
-
-    <h2>My Watchlist</h2>
-    <div class="notes">
-      <p style="margin-bottom:12px; font-size:14px; color:#9ca3af;">
-        Add any NORAD ID (your own satellite or an adversary). Positions use public TLE data only — good for awareness, not operations.
-      </p>
-      <div class="controls">
-        <input type="text" id="watch-id" placeholder="NORAD ID (e.g. 63230)">
-        <input type="text" id="watch-name" placeholder="Label (optional)">
-        <button onclick="addToWatchlist()" style="padding:8px 16px; border-radius:6px; background:#1e40af; color:white; border:none; cursor:pointer;">Add</button>
-      </div>
-      <div id="watchlist-output" style="margin-top:16px;"></div>
-    </div>
 
     <h2>Latest Activity Notes</h2>
     <div class="notes" id="notes">Loading latest notes...</div>
@@ -330,10 +354,9 @@
     Patriot Orbit · Open Source Space Domain Awareness
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/satellite.js/dist/satellite.min.js"></script>
   <script>
     let allObjects = [];
-    let watchlist = JSON.parse(localStorage.getItem('po_watchlist') || '[]');
+    let watchlist = [];
 
     function toggleDark() {
       document.body.classList.toggle('light');
@@ -443,137 +466,147 @@
     function filterTable() {
       const search = document.getElementById('search').value.toLowerCase();
       const country = document.getElementById('country').value;
-      const constellation = document.getElementById('constellation').value;
-
+      const constel = document.getElementById('constellation').value;
       const filtered = allObjects.filter(o => {
-        const matchSearch = !search || 
-          (o.OBJECT_NAME && o.OBJECT_NAME.toLowerCase().includes(search)) ||
-          (o.NORAD_CAT_ID && o.NORAD_CAT_ID.includes(search));
-        const matchCountry = !country || o.COUNTRY_CODE === country;
-        const matchConst = !constellation || o.CONSTELLATION === constellation;
-        return matchSearch && matchCountry && matchConst;
+        const nameMatch = (o.OBJECT_NAME || '').toLowerCase().includes(search);
+        const noradMatch = (o.NORAD_CAT_ID || '').toLowerCase().includes(search);
+        const countryMatch = !country || o.COUNTRY_CODE === country;
+        const constelMatch = !constel || o.CONSTELLATION === constel;
+        return (nameMatch || noradMatch) && countryMatch && constelMatch;
       });
-
       renderTable(filtered);
     }
 
-    function saveWatchlist() {
-      localStorage.setItem('po_watchlist', JSON.stringify(watchlist));
-      renderWatchlist();
+    function loadConstellations() {
+      const constels = [...new Set(allObjects.map(o => o.CONSTELLATION).filter(Boolean))].sort();
+      const select = document.getElementById('constellation');
+      select.innerHTML = '<option value="">All Constellations</option>';
+      constels.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
     }
 
-    function addToWatchlist() {
-      const id = document.getElementById('watch-id').value.trim();
-      const name = document.getElementById('watch-name').value.trim() || `NORAD ${id}`;
-      if (!id || isNaN(id)) return alert('Enter a valid NORAD number');
-      if (watchlist.some(w => w.id === id)) return alert('Already watching');
-      watchlist.push({ id, name });
-      document.getElementById('watch-id').value = '';
-      document.getElementById('watch-name').value = '';
-      saveWatchlist();
-    }
-
-    function removeWatch(id) {
-      watchlist = watchlist.filter(w => w.id !== id);
-      saveWatchlist();
-    }
-
-    async function getPositionFromTLE(line1, line2) {
-      try {
-        const satrec = satellite.twoline2satrec(line1, line2);
-        const now = new Date();
-        const positionAndVelocity = satellite.propagate(satrec, now);
-        if (!positionAndVelocity || !positionAndVelocity.position) return null;
-
-        const gmst = satellite.gstime(now);
-        const geodetic = satellite.eciToGeodetic(positionAndVelocity.position, gmst);
-
-        return {
-          lat: satellite.degreesLat(geodetic.latitude).toFixed(2),
-          lon: satellite.degreesLong(geodetic.longitude).toFixed(2),
-          alt: (geodetic.height).toFixed(0)
-        };
-      } catch (e) {
-        return null;
+    function checkHighlights() {
+      const fresh = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return !isNaN(epoch) && (Date.now() - epoch) < 24 * 60 * 60 * 1000;
+      });
+      const el = document.getElementById('highlight');
+      if (fresh.length > 0) {
+        el.style.display = 'block';
+        el.innerHTML = `<strong>${fresh.length}</strong> objects have epochs from the last 24 hours.`;
+      } else {
+        el.style.display = 'none';
       }
     }
 
-    async function renderWatchlist() {
-      const el = document.getElementById('watchlist-output');
-      if (watchlist.length === 0) {
-        el.innerHTML = '<div style="color:#9ca3af;">No satellites in watchlist yet.</div>';
+    function showPosition(el, satrec, name) {
+      if (!satrec) {
+        el.textContent = 'Invalid TLE';
+        el.style.display = 'block';
         return;
       }
-
-      el.innerHTML = '<div style="color:#9ca3af;">Loading live positions...</div>';
-
-      let html = '';
-      for (const w of watchlist) {
-        try {
-          const res = await fetch(`https://celestrak.org/NORAD/elements/gp.php?CATNR=${w.id}&FORMAT=TLE`);
-          if (!res.ok) throw new Error('fetch failed');
-          const text = await res.text();
-          const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
-
-          if (lines.length < 3) {
-            html += `<div class="watch-item"><strong>${w.name}</strong> (${w.id}) — no TLE data available</div>`;
-            continue;
-          }
-
-          const line1 = lines[1];
-          const line2 = lines[2];
-          const pos = await getPositionFromTLE(line1, line2);
-
-          html += `<div class="watch-item">
-            <strong>${w.name}</strong> (${w.id})
-            <button onclick="removeWatch('${w.id}')" style="float:right; background:none; border:none; color:#f87171; cursor:pointer; font-size:13px;">Remove</button><br>
-            ${pos 
-              ? `<span style="font-size:14px;">Current position: ${pos.lat}° N, ${pos.lon}° E &nbsp;·&nbsp; Altitude: ${pos.alt} km</span>`
-              : `<span style="font-size:13px; color:#9ca3af;">TLE received but position calculation failed</span>`
-            }
-          </div>`;
-        } catch (e) {
-          html += `<div class="watch-item"><strong>${w.name}</strong> (${w.id}) — could not fetch TLE (CORS or network). Try again later or use a proxy.</div>`;
-        }
+      const now = new Date();
+      const pv = satellite.propagate(satrec, now);
+      const posEci = pv.position;
+      if (!posEci) {
+        el.textContent = 'Could not propagate (bad TLE or too old)';
+        el.style.display = 'block';
+        return;
       }
-      el.innerHTML = html;
+      const gmst = satellite.gstime(now);
+      const posGd = satellite.eciToGeodetic(posEci, gmst);
+      const lat = satellite.degreesLat(posGd.latitude);
+      const lon = satellite.degreesLong(posGd.longitude);
+      const alt = posGd.height;
+      el.textContent = `${name || 'Object'}\nLat: ${lat.toFixed(4)}°\nLon: ${lon.toFixed(4)}°\nAlt: ${alt.toFixed(1)} km\nUTC: ${now.toISOString()}`;
+      el.style.display = 'block';
+    }
+
+    function calcFromWatchlist(norad) {
+      const obj = watchlist.find(s => String(s.norad) === String(norad));
+      if (!obj || !obj.tle_line1 || !obj.tle_line2) {
+        alert('Missing TLE for this object');
+        return;
+      }
+      const satrec = satellite.twoline2satrec(obj.tle_line1.trim(), obj.tle_line2.trim());
+      const el = document.getElementById('pos-' + norad);
+      showPosition(el, satrec, obj.name);
+    }
+
+    function calculateFromPaste() {
+      const raw = document.getElementById('tle-input').value.trim();
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let line1, line2;
+      if (lines.length >= 3 && lines[1].startsWith('1 ') && lines[2].startsWith('2 ')) {
+        line1 = lines[1];
+        line2 = lines[2];
+      } else if (lines.length >= 2 && lines[0].startsWith('1 ') && lines[1].startsWith('2 ')) {
+        line1 = lines[0];
+        line2 = lines[1];
+      } else {
+        const el = document.getElementById('paste-result');
+        el.textContent = 'Need two valid TLE lines (starting with 1 and 2)';
+        el.style.display = 'block';
+        return;
+      }
+      const satrec = satellite.twoline2satrec(line1, line2);
+      const el = document.getElementById('paste-result');
+      showPosition(el, satrec, 'Pasted TLE');
+    }
+
+    async function loadWatchlist() {
+      try {
+        const res = await fetch('watchlist_tles.json');
+        if (!res.ok) throw new Error('no file');
+        const data = await res.json();
+        watchlist = Array.isArray(data) ? data : [];
+        const status = document.getElementById('watchlist-status');
+        const list = document.getElementById('watchlist-list');
+        if (watchlist.length === 0) {
+          status.innerHTML = '<span style="color:#9ca3af;">No watchlist entries yet. Use the paste box below.</span>';
+          return;
+        }
+        status.innerHTML = `<span style="color:#3fb950;">${watchlist.length} objects in watchlist</span>`;
+        list.innerHTML = watchlist.map(s => `
+          <div class="watchlist-item">
+            <span><strong>${s.name || 'Unknown'}</strong> (NORAD ${s.norad || '?'})</span>
+            <button onclick="calcFromWatchlist('${s.norad}')">Position</button>
+            <div id="pos-${s.norad}" class="pos-result" style="display:none; width:100%;"></div>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('watchlist-status').innerHTML = '<span style="color:#9ca3af;">Could not load watchlist_tles.json. Use the paste box below.</span>';
+      }
     }
 
     async function loadData() {
       try {
-        const [csvRes, notesRes] = await Promise.all([
-          fetch('MASTER_ALL_SPACE_OBJECTS.csv'),
-          fetch('AUTO_NOTES.txt')
-        ]);
-
-        const csvText = await csvRes.text();
+        const notesRes = await fetch('AUTO_NOTES.txt');
         const notesText = await notesRes.text();
+        document.getElementById('notes').innerHTML = formatNotes(notesText);
 
+        const csvRes = await fetch('MASTER_ALL_SPACE_OBJECTS.csv');
+        const csvText = await csvRes.text();
         allObjects = parseCSV(csvText);
-
-        // Populate constellation filter
-        const constellations = [...new Set(allObjects.map(o => o.CONSTELLATION).filter(Boolean))].sort();
-        const select = document.getElementById('constellation');
-        constellations.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c;
-          opt.textContent = c;
-          select.appendChild(opt);
-        });
-
         renderStats();
         renderMajorMovements();
+        loadConstellations();
         renderTable(allObjects);
-        document.getElementById('notes').innerHTML = formatNotes(notesText);
+        checkHighlights();
       } catch (e) {
+        document.getElementById('notes').textContent = 'Failed to load data.';
+        document.getElementById('major-movements').textContent = 'Failed to load major movements.';
         console.error(e);
-        document.getElementById('notes').innerHTML = 'Error loading data.';
       }
+      loadWatchlist();
     }
 
-    // Init
     loadData();
-    renderWatchlist();
   </script>
 </body>
 </html>
