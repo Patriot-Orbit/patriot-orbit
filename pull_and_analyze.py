@@ -24,6 +24,8 @@ country_map = {
 
 ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
 
+GITHUB_URL = "https://github.com/Patriot-Orbit/patriot-orbit"
+
 # Load previous snapshot if it exists
 prev_file = 'previous_snapshot.csv'
 previous = None
@@ -33,7 +35,6 @@ if os.path.exists(prev_file):
         previous = pd.read_csv(prev_file)
         if 'NORAD_CAT_ID' in previous.columns:
             previous['NORAD_CAT_ID'] = previous['NORAD_CAT_ID'].astype(str)
-        # Get file modification time as last pull time
         last_pull_time = datetime.utcfromtimestamp(os.path.getmtime(prev_file))
     except:
         previous = None
@@ -147,7 +148,6 @@ if all_dfs:
 
     notes.append(f"Total objects in master file: {len(master)}")
 else:
-    # Rate-limited, skipped, or no data — keep previous numbers
     if not should_pull:
         notes.append("No new data pulled this run (once-per-hour limit).\n")
     else:
@@ -181,6 +181,11 @@ else:
         notes.append(f"Total objects in master file: {len(previous)}")
     else:
         notes.append("No previous data available.")
+
+# Always add GitHub link at the bottom
+notes.append("")
+notes.append("---")
+notes.append(f"Full data & code: {GITHUB_URL}")
 
 with open('AUTO_NOTES.txt', 'w') as f:
     f.write('\n'.join(notes))
