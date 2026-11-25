@@ -293,12 +293,15 @@
 
     <h2>Position Calculator</h2>
     <div class="position-card" id="position-card">
-      <div id="watchlist-status">Loading watchlist…</div>
+      <div id="watchlist-status" style="margin-bottom:10px; color:#9ca3af;">No watchlist entries yet.</div>
       <div id="watchlist-list"></div>
       <hr style="border-color:rgba(255,255,255,0.1); margin:16px 0;">
-      <div style="font-weight:600; margin-bottom:6px;">Or paste a TLE</div>
+      <div style="font-weight:600; margin-bottom:6px;">Paste a TLE</div>
       <textarea id="tle-input" placeholder="Paste TLE line 1 and line 2 (or full 3-line set)"></textarea>
-      <button onclick="calculateFromPaste()">Calculate Position</button>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button onclick="calculateFromPaste()">Calculate Position</button>
+        <button onclick="addToWatchlist()" style="background:#238636;">Add to Watchlist</button>
+      </div>
       <div id="paste-result" class="pos-result" style="display:none;"></div>
     </div>
 
@@ -356,7 +359,6 @@
 
   <script>
     let allObjects = [];
-    let watchlist = [];
 
     function toggleDark() {
       document.body.classList.toggle('light');
@@ -527,17 +529,6 @@
       el.style.display = 'block';
     }
 
-    function calcFromWatchlist(norad) {
-      const obj = watchlist.find(s => String(s.norad) === String(norad));
-      if (!obj || !obj.tle_line1 || !obj.tle_line2) {
-        alert('Missing TLE for this object');
-        return;
-      }
-      const satrec = satellite.twoline2satrec(obj.tle_line1.trim(), obj.tle_line2.trim());
-      const el = document.getElementById('pos-' + norad);
-      showPosition(el, satrec, obj.name);
-    }
-
     function calculateFromPaste() {
       const raw = document.getElementById('tle-input').value.trim();
       const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
@@ -559,29 +550,69 @@
       showPosition(el, satrec, 'Pasted TLE');
     }
 
-    async function loadWatchlist() {
-      try {
-        const res = await fetch('watchlist_tles.json');
-        if (!res.ok) throw new Error('no file');
-        const data = await res.json();
-        watchlist = Array.isArray(data) ? data : [];
-        const status = document.getElementById('watchlist-status');
-        const list = document.getElementById('watchlist-list');
-        if (watchlist.length === 0) {
-          status.innerHTML = '<span style="color:#9ca3af;">No watchlist entries yet. Use the paste box below.</span>';
-          return;
-        }
-        status.innerHTML = `<span style="color:#3fb950;">${watchlist.length} objects in watchlist</span>`;
-        list.innerHTML = watchlist.map(s => `
-          <div class="watchlist-item">
-            <span><strong>${s.name || 'Unknown'}</strong> (NORAD ${s.norad || '?'})</span>
-            <button onclick="calcFromWatchlist('${s.norad}')">Position</button>
-            <div id="pos-${s.norad}" class="pos-result" style="display:none; width:100%;"></div>
-          </div>
-        `).join('');
-      } catch (e) {
-        document.getElementById('watchlist-status').innerHTML = '<span style="color:#9ca3af;">Could not load watchlist_tles.json. Use the paste box below.</span>';
+    function getWatchlist() {
+      try { return JSON.parse(localStorage.getItem('patriotWatchlist') || '[]'); }
+      catch { return []; }
+    }
+
+    function saveWatchlist(list) {
+      localStorage.setItem('patriotWatchlist', JSON.stringify(list));
+    }
+
+    function renderWatchlist() {
+      const list = getWatchlist();
+      const status = document.getElementById('watchlist-status');
+      const container = document.getElementById('watchlist-list');
+      if (!status || !container) return;
+      if (list.length === 0) {
+        status.textContent = 'No watchlist entries yet.';
+        container.innerHTML = '';
+        return;
       }
+      status.innerHTML = `<span style="color:#3fb950;">${list.length} satellite(s) in watchlist</span>`;
+      container.innerHTML = list.map((s, i) => `
+        <div class="watchlist-item">
+          <span><strong>${s.name || 'Unnamed'}</strong> (NORAD ${s.norad || '?'})</span>
+          <span>
+            <button onclick="calcFromSaved(${i})" style="margin-right:6px;">Position</button>
+            <button onclick="removeFromWatchlist(${i})" style="background:#da3633;">Remove</button>
+          </span>
+          <div id="pos-saved-${i}" class="pos-result" style="display:none; width:100%;"></div>
+        </div>
+      `).join('');
+    }
+
+    function addToWatchlist() {
+      const raw = document.getElementById('tle-input').value.trim();
+      if (!raw) return alert('Paste a TLE first');
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let line1, line2;
+      if (lines.length >= 3 && lines[1].startsWith('1 ')) {
+        line1 = lines[1]; line2 = lines[2];
+      } else if (lines.length >= 2) {
+        line1 = lines[0]; line2 = lines[1];
+      } else return alert('Need at least two TLE lines');
+      const norad = line1.substring(2, 7).trim();
+      const name = prompt('Name for this satellite (optional):') || `NORAD ${norad}`;
+      const list = getWatchlist();
+      list.push({ name, norad, tle_line1: line1, tle_line2: line2 });
+      saveWatchlist(list);
+      renderWatchlist();
+      alert('Added to watchlist');
+    }
+
+    function removeFromWatchlist(idx) {
+      const list = getWatchlist();
+      list.splice(idx, 1);
+      saveWatchlist(list);
+      renderWatchlist();
+    }
+
+    function calcFromSaved(idx) {
+      const s = getWatchlist()[idx];
+      if (!s) return;
+      const satrec = satellite.twoline2satrec(s.tle_line1, s.tle_line2);
+      showPosition(document.getElementById('pos-saved-' + idx), satrec, s.name);
     }
 
     async function loadData() {
@@ -603,10 +634,10 @@
         document.getElementById('major-movements').textContent = 'Failed to load major movements.';
         console.error(e);
       }
-      loadWatchlist();
     }
 
     loadData();
+    renderWatchlist();
   </script>
 </body>
 </html>
