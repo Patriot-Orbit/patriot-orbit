@@ -1,6 +1,6 @@
-Patriot Orbit Update — 2026-11-25 17:07 UTC
+Patriot Orbit Update — 2026-11-25 17:30 UTC
 
-No new data pulled this run (Space-Track rate limit or temporary issue).
+No new data pulled this run (once-per-hour limit).
 
 Showing last successful pull:
 
@@ -17,3 +17,6 @@ Iranian Activity: 9 objects tracked.
 - Includes Noor military satellites and related objects.
 
 Total objects in master file: 17459
+
+---
+Full data & code: https://github.com/Patriot-Orbit/patriot-orbit
