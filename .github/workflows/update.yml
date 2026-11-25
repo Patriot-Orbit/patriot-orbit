@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install spacetrack pandas
+          pip install spacetrack pandas requests
 
       - name: Run update script
         env:
