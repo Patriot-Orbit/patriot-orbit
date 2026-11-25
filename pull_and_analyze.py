@@ -1,10 +1,15 @@
 from spacetrack import SpaceTrackClient
 import pandas as pd
 import json
-from datetime import datetime, timedelta
 import os
+import time
+from datetime import datetime
 
-st = SpaceTrackClient('bradenrbailey02@gmail.com', 'Uscuscusc9777!!!')
+# Prefer secrets in GitHub Actions; falls back to the values below for local runs
+IDENTITY = os.getenv('SPACETRACK_USER', 'bradenrbailey02@gmail.com')
+PASSWORD = os.getenv('SPACETRACK_PASS', 'Uscuscusc9777!!!')
+
+st = SpaceTrackClient(IDENTITY, PASSWORD)
 
 constellations = [
     '~~YAOGAN~~', '~~BEIDOU~~', '~~GAOFEN~~', '~~QIANFAN~~',
@@ -12,6 +17,12 @@ constellations = [
     '~~GLONASS~~', '~~COSMOS~~', '~~KANOPUS~~', '~~RESURS~~',
     '~~KWANGMYONGSONG~~', '~~MALLIGYONG~~',
     '~~NOOR~~', '~~KHAYYAM~~', '~~SAFIR~~'
+]
+
+# Optional extra NORAD IDs for the frontend watchlist file
+WATCHLIST_NORADS = [
+    # '25544',
+    # '63230',
 ]
 
 country_map = {
@@ -24,50 +35,74 @@ country_map = {
 
 ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
 
-GITHUB_URL = "https://github.com/Patriot-Orbit/patriot-orbit"
+def rate_limit_sleep():
+    time.sleep(3)
 
-# Load previous snapshot if it exists
 prev_file = 'previous_snapshot.csv'
 previous = None
-last_pull_time = None
 if os.path.exists(prev_file):
     try:
         previous = pd.read_csv(prev_file)
         if 'NORAD_CAT_ID' in previous.columns:
             previous['NORAD_CAT_ID'] = previous['NORAD_CAT_ID'].astype(str)
-        last_pull_time = datetime.utcfromtimestamp(os.path.getmtime(prev_file))
-    except:
+    except Exception:
         previous = None
 
-# Only pull if last successful pull was more than 1 hour ago
-should_pull = True
-if last_pull_time is not None:
-    if datetime.utcnow() - last_pull_time < timedelta(hours=1):
-        should_pull = False
-        print(f"Last pull was at {last_pull_time.strftime('%Y-%m-%d %H:%M UTC')}. Skipping pull (once per hour limit).")
-
 all_dfs = []
+watchlist_data = []
 
-if should_pull:
-    for name in constellations:
-        try:
-            data = st.gp(object_name=name, format='json')
-            satellites = json.loads(data)
-            df = pd.DataFrame(satellites)
+print("Starting hourly-compliant pull...")
+
+for name in constellations:
+    try:
+        data = st.gp(
+            object_name=name,
+            format='json',
+            epoch='%3Enow-10',
+            decay_date='null-val'
+        )
+        satellites = json.loads(data)
+        df = pd.DataFrame(satellites)
+        if not df.empty:
+            clean_name = name.replace('~~', '')
+            df['CONSTELLATION'] = clean_name
+            df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
+            df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
             if not df.empty:
-                clean_name = name.replace('~~', '')
-                df['CONSTELLATION'] = clean_name
-                df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
-                df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
-                if not df.empty:
-                    if 'NORAD_CAT_ID' in df.columns:
-                        df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
-                    all_dfs.append(df)
-                    print(f"Pulled {len(df)} for {name}")
-        except Exception as e:
-            print(f"Error on {name}: {e}")
-else:
-    print("Using previous snapshot data (rate limit protection).")
+                if 'NORAD_CAT_ID' in df.columns:
+                    df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
+                all_dfs.append(df)
+                print(f"Pulled {len(df)} for {clean_name}")
+        rate_limit_sleep()
+    except Exception as e:
+        print(f"Error on {name}: {e}")
+        rate_limit_sleep()
+
+if WATCHLIST_NORADS:
+    try:
+        data = st.gp(
+            norad_cat_id=','.join(WATCHLIST_NORADS),
+            format='json',
+            epoch='%3Enow-10',
+            decay_date='null-val'
+        )
+        sats = json.loads(data)
+        for s in sats:
+            watchlist_data.append({
+                'norad': str(s.get('NORAD_CAT_ID', '')),
+                'name': s.get('OBJECT_NAME', ''),
+                'tle_line1': s.get('TLE_LINE1', ''),
+                'tle_line2': s.get('TLE_LINE2', ''),
+                'epoch': s.get('EPOCH', ''),
+                'inclination': s.get('INCLINATION', ''),
+            })
+        print(f"Pulled {len(watchlist_data)} watchlist objects")
+        rate_limit_sleep()
+    except Exception as e:
+        print(f"Watchlist pull error: {e}")
+
+with open('watchlist_tles.json', 'w') as f:
+    json.dump(watchlist_data, f, indent=2)
 
 notes = []
 now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
@@ -122,8 +157,6 @@ if all_dfs:
     china = master[master['COUNTRY_CODE'] == 'PRC']
     notes.append(f"Chinese Activity: {len(china)} objects tracked.")
     if not china.empty:
-        recent = china[china['EPOCH'] > '2026-11-20']
-        notes.append(f"- {len(recent)} have fresh epochs in the last few days.")
         yaogan = china[china['CONSTELLATION'] == 'YAOGAN']
         notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
         notes.append("")
@@ -148,11 +181,8 @@ if all_dfs:
 
     notes.append(f"Total objects in master file: {len(master)}")
 else:
-    if not should_pull:
-        notes.append("No new data pulled this run (once-per-hour limit).\n")
-    else:
-        notes.append("No new data pulled this run (Space-Track rate limit or temporary issue).\n")
-    notes.append("Showing last successful pull:\n")
+    notes.append("No new data pulled this run.\n")
+    notes.append("Showing last successful pull if available:\n")
 
     if previous is not None and not previous.empty:
         china = previous[previous['COUNTRY_CODE'] == 'PRC'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
@@ -182,12 +212,8 @@ else:
     else:
         notes.append("No previous data available.")
 
-# Always add GitHub link at the bottom
-notes.append("")
-notes.append("---")
-notes.append(f"Full data & code: {GITHUB_URL}")
-
 with open('AUTO_NOTES.txt', 'w') as f:
     f.write('\n'.join(notes))
 
-print("AUTO_NOTES.txt updated")
+print("AUTO_NOTES.txt and watchlist_tles.json updated")
+print("Done (hourly schedule).")
