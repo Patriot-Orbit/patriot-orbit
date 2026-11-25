@@ -2,8 +2,9 @@ name: Update Space Data
 
 on:
   schedule:
-    - cron: '*/15 * * * *'   # every 15 minutes
-  workflow_dispatch:         # keeps the manual button
+    # Hourly at minute 17 (avoids the top and bottom of the hour)
+    - cron: '17 * * * *'
+  workflow_dispatch:
 
 jobs:
   update:
@@ -25,6 +26,9 @@ jobs:
           pip install spacetrack pandas
 
       - name: Run update script
+        env:
+          SPACETRACK_USER: ${{ secrets.SPACETRACK_USER }}
+          SPACETRACK_PASS: ${{ secrets.SPACETRACK_PASS }}
         run: python pull_and_analyze.py
 
       - name: Commit and push if changed
