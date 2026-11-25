@@ -3,13 +3,17 @@ import pandas as pd
 import json
 import os
 import time
+import requests
 from datetime import datetime
 
 # Prefer secrets in GitHub Actions; falls back to the values below for local runs
 IDENTITY = os.getenv('SPACETRACK_USER', 'bradenrbailey02@gmail.com')
 PASSWORD = os.getenv('SPACETRACK_PASS', 'Uscuscusc9777!!!')
 
-st = SpaceTrackClient(IDENTITY, PASSWORD)
+# CelesTrak requires a descriptive User-Agent
+CELESTRAK_HEADERS = {
+    'User-Agent': 'PatriotOrbit/1.0 (hourly public TLE fallback; +https://patriotorbit.com)'
+}
 
 constellations = [
     '~~YAOGAN~~', '~~BEIDOU~~', '~~GAOFEN~~', '~~QIANFAN~~',
@@ -19,7 +23,6 @@ constellations = [
     '~~NOOR~~', '~~KHAYYAM~~', '~~SAFIR~~'
 ]
 
-# Optional extra NORAD IDs for the frontend watchlist file
 WATCHLIST_NORADS = [
     # '25544',
     # '63230',
@@ -38,6 +41,36 @@ ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
 def rate_limit_sleep():
     time.sleep(3)
 
+def fetch_celestrak_json(name):
+    """Public CelesTrak GP JSON fallback. NAME is without the ~~ markers."""
+    clean = name.replace('~~', '')
+    url = 'https://celestrak.org/NORAD/elements/gp.php'
+    params = {'NAME': clean, 'FORMAT': 'json'}
+    r = requests.get(url, params=params, headers=CELESTRAK_HEADERS, timeout=30)
+    r.raise_for_status()
+    data = r.json()
+    if not isinstance(data, list):
+        return []
+    return data
+
+def fetch_celestrak_tle(name):
+    """Return list of (name, line1, line2) from CelesTrak TLE format."""
+    clean = name.replace('~~', '')
+    url = 'https://celestrak.org/NORAD/elements/gp.php'
+    params = {'NAME': clean, 'FORMAT': 'tle'}
+    r = requests.get(url, params=params, headers=CELESTRAK_HEADERS, timeout=30)
+    r.raise_for_status()
+    lines = [ln.strip() for ln in r.text.splitlines() if ln.strip()]
+    results = []
+    i = 0
+    while i + 2 < len(lines):
+        if lines[i+1].startswith('1 ') and lines[i+2].startswith('2 '):
+            results.append((lines[i], lines[i+1], lines[i+2]))
+            i += 3
+        else:
+            i += 1
+    return results
+
 prev_file = 'previous_snapshot.csv'
 previous = None
 if os.path.exists(prev_file):
@@ -51,55 +84,106 @@ if os.path.exists(prev_file):
 all_dfs = []
 watchlist_data = []
 
-print("Starting hourly-compliant pull...")
+print("Starting hourly-compliant pull (Space-Track with CelesTrak fallback)...")
+
+# Try Space-Track client once; if credentials fail we stay on CelesTrak
+st = None
+try:
+    st = SpaceTrackClient(IDENTITY, PASSWORD)
+    # Quick health check
+    st.gp(norad_cat_id='25544', format='json')
+    print("Space-Track connection OK")
+except Exception as e:
+    print(f"Space-Track unavailable ({e}). Using CelesTrak fallback for this run.")
+    st = None
 
 for name in constellations:
-    try:
-        data = st.gp(
-            object_name=name,
-            format='json',
-            epoch='%3Enow-10',
-            decay_date='null-val'
-        )
-        satellites = json.loads(data)
-        df = pd.DataFrame(satellites)
-        if not df.empty:
-            clean_name = name.replace('~~', '')
-            df['CONSTELLATION'] = clean_name
-            df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
-            df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
-            if not df.empty:
-                if 'NORAD_CAT_ID' in df.columns:
-                    df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
-                all_dfs.append(df)
-                print(f"Pulled {len(df)} for {clean_name}")
-        rate_limit_sleep()
-    except Exception as e:
-        print(f"Error on {name}: {e}")
-        rate_limit_sleep()
+    clean_name = name.replace('~~', '')
+    df = None
+    source = None
 
+    # Prefer Space-Track
+    if st is not None:
+        try:
+            data = st.gp(
+                object_name=name,
+                format='json',
+                epoch='%3Enow-10',
+                decay_date='null-val'
+            )
+            satellites = json.loads(data)
+            df = pd.DataFrame(satellites)
+            source = 'Space-Track'
+        except Exception as e:
+            print(f"Space-Track error on {clean_name}: {e}")
+
+    # Fallback to CelesTrak
+    if df is None or df.empty:
+        try:
+            sats = fetch_celestrak_json(name)
+            if sats:
+                df = pd.DataFrame(sats)
+                source = 'CelesTrak'
+            rate_limit_sleep()
+        except Exception as e:
+            print(f"CelesTrak error on {clean_name}: {e}")
+
+    if df is not None and not df.empty:
+        df['CONSTELLATION'] = clean_name
+        df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
+        df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
+        if not df.empty:
+            if 'NORAD_CAT_ID' in df.columns:
+                df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
+            all_dfs.append(df)
+            print(f"Pulled {len(df)} for {clean_name} via {source}")
+
+    rate_limit_sleep()
+
+# Watchlist (optional NORAD list) – try Space-Track, then CelesTrak
 if WATCHLIST_NORADS:
     try:
-        data = st.gp(
-            norad_cat_id=','.join(WATCHLIST_NORADS),
-            format='json',
-            epoch='%3Enow-10',
-            decay_date='null-val'
-        )
-        sats = json.loads(data)
-        for s in sats:
-            watchlist_data.append({
-                'norad': str(s.get('NORAD_CAT_ID', '')),
-                'name': s.get('OBJECT_NAME', ''),
-                'tle_line1': s.get('TLE_LINE1', ''),
-                'tle_line2': s.get('TLE_LINE2', ''),
-                'epoch': s.get('EPOCH', ''),
-                'inclination': s.get('INCLINATION', ''),
-            })
-        print(f"Pulled {len(watchlist_data)} watchlist objects")
-        rate_limit_sleep()
-    except Exception as e:
-        print(f"Watchlist pull error: {e}")
+        if st is not None:
+            data = st.gp(
+                norad_cat_id=','.join(WATCHLIST_NORADS),
+                format='json',
+                epoch='%3Enow-10',
+                decay_date='null-val'
+            )
+            sats = json.loads(data)
+            for s in sats:
+                watchlist_data.append({
+                    'norad': str(s.get('NORAD_CAT_ID', '')),
+                    'name': s.get('OBJECT_NAME', ''),
+                    'tle_line1': s.get('TLE_LINE1', ''),
+                    'tle_line2': s.get('TLE_LINE2', ''),
+                    'epoch': s.get('EPOCH', ''),
+                    'inclination': s.get('INCLINATION', ''),
+                })
+            print(f"Pulled {len(watchlist_data)} watchlist objects via Space-Track")
+        else:
+            raise Exception("skip")
+    except Exception:
+        # CelesTrak fallback for watchlist: use TLE format so we have line1/line2
+        try:
+            for norad in WATCHLIST_NORADS:
+                url = 'https://celestrak.org/NORAD/elements/gp.php'
+                r = requests.get(url, params={'CATNR': norad, 'FORMAT': 'tle'},
+                                 headers=CELESTRAK_HEADERS, timeout=30)
+                r.raise_for_status()
+                lines = [ln.strip() for ln in r.text.splitlines() if ln.strip()]
+                if len(lines) >= 3 and lines[1].startswith('1 ') and lines[2].startswith('2 '):
+                    watchlist_data.append({
+                        'norad': norad,
+                        'name': lines[0],
+                        'tle_line1': lines[1],
+                        'tle_line2': lines[2],
+                        'epoch': '',
+                        'inclination': '',
+                    })
+            print(f"Pulled {len(watchlist_data)} watchlist objects via CelesTrak")
+        except Exception as e:
+            print(f"Watchlist CelesTrak error: {e}")
 
 with open('watchlist_tles.json', 'w') as f:
     json.dump(watchlist_data, f, indent=2)
@@ -181,39 +265,9 @@ if all_dfs:
 
     notes.append(f"Total objects in master file: {len(master)}")
 else:
-    notes.append("No new data pulled this run.\n")
-    notes.append("Showing last successful pull if available:\n")
-
-    if previous is not None and not previous.empty:
-        china = previous[previous['COUNTRY_CODE'] == 'PRC'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
-        russia = previous[previous['COUNTRY_CODE'] == 'CIS'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
-        nk = previous[previous['COUNTRY_CODE'] == 'NKOR'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
-        iran = previous[previous['COUNTRY_CODE'] == 'IRAN'] if 'COUNTRY_CODE' in previous.columns else pd.DataFrame()
-
-        notes.append(f"Chinese Activity: {len(china)} objects tracked.")
-        if not china.empty and 'CONSTELLATION' in china.columns:
-            yaogan = china[china['CONSTELLATION'] == 'YAOGAN']
-            notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
-        notes.append("")
-
-        notes.append(f"Russian Activity: {len(russia)} objects tracked.")
-        notes.append("- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
-        notes.append("")
-
-        notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
-        notes.append("- Malligyong-1 remains the primary active object.")
-        notes.append("")
-
-        notes.append(f"Iranian Activity: {len(iran)} objects tracked.")
-        notes.append("- Includes Noor military satellites and related objects.")
-        notes.append("")
-
-        notes.append(f"Total objects in master file: {len(previous)}")
-    else:
-        notes.append("No previous data available.")
+    notes.append("No data pulled this run (both Space-Track and CelesTrak failed).")
 
 with open('AUTO_NOTES.txt', 'w') as f:
     f.write('\n'.join(notes))
 
-print("AUTO_NOTES.txt and watchlist_tles.json updated")
-print("Done (hourly schedule).")
+print("Done.")
