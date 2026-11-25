@@ -1,7 +1,7 @@
 from spacetrack import SpaceTrackClient
 import pandas as pd
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 st = SpaceTrackClient('bradenrbailey02@gmail.com', 'Uscuscusc9777!!!')
@@ -27,33 +27,46 @@ ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
 # Load previous snapshot if it exists
 prev_file = 'previous_snapshot.csv'
 previous = None
+last_pull_time = None
 if os.path.exists(prev_file):
     try:
         previous = pd.read_csv(prev_file)
         if 'NORAD_CAT_ID' in previous.columns:
             previous['NORAD_CAT_ID'] = previous['NORAD_CAT_ID'].astype(str)
+        # Get file modification time as last pull time
+        last_pull_time = datetime.utcfromtimestamp(os.path.getmtime(prev_file))
     except:
         previous = None
 
+# Only pull if last successful pull was more than 1 hour ago
+should_pull = True
+if last_pull_time is not None:
+    if datetime.utcnow() - last_pull_time < timedelta(hours=1):
+        should_pull = False
+        print(f"Last pull was at {last_pull_time.strftime('%Y-%m-%d %H:%M UTC')}. Skipping pull (once per hour limit).")
+
 all_dfs = []
 
-for name in constellations:
-    try:
-        data = st.gp(object_name=name, format='json')
-        satellites = json.loads(data)
-        df = pd.DataFrame(satellites)
-        if not df.empty:
-            clean_name = name.replace('~~', '')
-            df['CONSTELLATION'] = clean_name
-            df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
-            df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
+if should_pull:
+    for name in constellations:
+        try:
+            data = st.gp(object_name=name, format='json')
+            satellites = json.loads(data)
+            df = pd.DataFrame(satellites)
             if not df.empty:
-                if 'NORAD_CAT_ID' in df.columns:
-                    df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
-                all_dfs.append(df)
-                print(f"Pulled {len(df)} for {name}")
-    except Exception as e:
-        print(f"Error on {name}: {e}")
+                clean_name = name.replace('~~', '')
+                df['CONSTELLATION'] = clean_name
+                df['COUNTRY_CODE'] = country_map.get(clean_name, 'UNK')
+                df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
+                if not df.empty:
+                    if 'NORAD_CAT_ID' in df.columns:
+                        df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
+                    all_dfs.append(df)
+                    print(f"Pulled {len(df)} for {name}")
+        except Exception as e:
+            print(f"Error on {name}: {e}")
+else:
+    print("Using previous snapshot data (rate limit protection).")
 
 notes = []
 now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
@@ -134,8 +147,11 @@ if all_dfs:
 
     notes.append(f"Total objects in master file: {len(master)}")
 else:
-    # Rate-limited or no data — keep previous numbers
-    notes.append("No new data pulled this run (Space-Track rate limit or temporary issue).\n")
+    # Rate-limited, skipped, or no data — keep previous numbers
+    if not should_pull:
+        notes.append("No new data pulled this run (once-per-hour limit).\n")
+    else:
+        notes.append("No new data pulled this run (Space-Track rate limit or temporary issue).\n")
     notes.append("Showing last successful pull:\n")
 
     if previous is not None and not previous.empty:
