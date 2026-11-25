@@ -1,22 +1,33 @@
-Patriot Orbit Update — 2026-11-25 20:24 UTC
+Patriot Orbit Update — 2026-11-25 21:14 UTC
 
-No new data pulled this run (once-per-hour limit).
+Significant Orbital Changes Detected:
+- YAOGAN-35 03C (NORAD 53320): Mean motion shifted 15.5931 → 15.5945
+- YAOGAN-36 02C (NORAD 54045): Mean motion shifted 15.6613 → 15.6635
+- YAOGAN-43 02A (NORAD 60945): Mean motion shifted 15.7179 → 15.7210
+- YAOGAN 25C DEB (NORAD 69732): Mean motion shifted 13.8249 → 13.8260
+- YAOGAN 25C DEB (NORAD 69733): Mean motion shifted 13.5206 → 13.5217
+- YAOGAN-50 02 DEB (NORAD 100575): Mean motion shifted 13.9127 → 13.9139
+- YAOGAN-50 02 DEB (NORAD 100576): Mean motion shifted 14.4478 → 14.4488
+- YAOGAN-50 02 DEB (NORAD 100578): Mean motion shifted 14.3909 → 14.3927
+- YAOGAN-50 02 DEB (NORAD 100579): Mean motion shifted 14.2982 → 14.2993
+- YAOGAN-50 02 DEB (NORAD 100581): Mean motion shifted 14.3286 → 14.3303
+- YAOGAN-50 02 DEB (NORAD 100586): Mean motion shifted 14.1330 → 14.1343
+- YAOGAN-50 02 DEB (NORAD 100592): Mean motion shifted 14.1536 → 14.2471
+- YAOGAN-50 02 DEB (NORAD 100596): Mean motion shifted 14.0104 → 14.0115
+- YAOGAN-50 02 DEB (NORAD 100598): Mean motion shifted 14.1684 → 14.1700
+- YAOGAN-50 02 DEB (NORAD 100805): Mean motion shifted 14.0561 → 14.0571
+- ...and 84 more changes
 
-Showing last successful pull:
+Chinese Activity: 2763 objects tracked.
+- Yaogan: 268 objects (includes known debris and triplets).
 
-Chinese Activity: 4326 objects tracked.
-- Yaogan: 290 objects (includes known debris and triplets).
-
-Russian Activity: 13123 objects tracked.
+Russian Activity: 3041 objects tracked.
 - Includes GLONASS navigation and COSMOS reconnaissance satellites.
 
 North Korean Activity: 1 objects tracked.
 - Malligyong-1 remains the primary active object.
 
-Iranian Activity: 9 objects tracked.
+Iranian Activity: 3 objects tracked.
 - Includes Noor military satellites and related objects.
 
-Total objects in master file: 17459
-
----
-Full data & code: https://github.com/Patriot-Orbit/patriot-orbit
+Total objects in master file: 5808
