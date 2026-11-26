@@ -1,643 +1,381 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Patriot Orbit</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.1.4/satellite.min.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #000 url('background.jpg') center/cover no-repeat fixed;
-      color: #e8eef7;
-      min-height: 100vh;
-      transition: background 0.3s;
-    }
-    body.light {
-      background: #f4f6f9 url('background.jpg') center/cover no-repeat fixed;
-      color: #1f2937;
-    }
-    body::before {
-      content: "";
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 5, 15, 0.55);
-      z-index: -1;
-    }
-    body.light::before {
-      background: rgba(255, 255, 255, 0.75);
-    }
-    header {
-      text-align: center;
-      padding: 40px 20px 20px;
-      position: relative;
-    }
-    header img {
-      width: 280px;
-      max-width: 90%;
-      height: auto;
-      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
-    }
-    .tagline {
-      margin-top: 12px;
-      font-size: 14px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #c0c8d4;
-      font-weight: 500;
-    }
-    .dark-toggle {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-    body.light .dark-toggle {
-      background: rgba(0,0,0,0.1);
-      color: #1f2937;
-    }
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 10px 20px 80px;
-    }
-    h2 {
-      font-size: 22px;
-      font-weight: 600;
-      margin: 36px 0 14px;
-      color: #fff;
-    }
-    body.light h2 { color: #111827; }
-    .stats {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-    .stat {
-      background: rgba(10, 15, 25, 0.75);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      padding: 16px 20px;
-      min-width: 140px;
-      backdrop-filter: blur(6px);
-    }
-    body.light .stat {
-      background: rgba(255,255,255,0.9);
-      border-color: #e5e7eb;
-    }
-    .stat .num {
-      font-size: 24px;
-      font-weight: 700;
-      color: #fff;
-    }
-    body.light .stat .num { color: #1e40af; }
-    .stat .label {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-top: 2px;
-    }
-    .notes, .major-movements, .position-card {
-      background: rgba(10, 15, 25, 0.75);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 14px;
-      padding: 24px;
-      backdrop-filter: blur(6px);
-      font-size: 15.5px;
-      line-height: 1.7;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
-    }
-    body.light .notes, body.light .major-movements, body.light .position-card {
-      background: rgba(255,255,255,0.92);
-      border-color: #e5e7eb;
-      color: #1f2937;
-    }
-    .notes .update-time {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-bottom: 16px;
-    }
-    .notes .section { margin-bottom: 16px; }
-    .notes .section-title { font-weight: 600; margin-bottom: 4px; }
-    .notes .section ul { margin-left: 20px; margin-top: 4px; }
-    .notes .section li { margin: 3px 0; }
-    .notes .total {
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      font-weight: 600;
-    }
-    body.light .notes .total { border-top-color: #e5e7eb; }
-    .controls {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin: 16px 0;
-    }
-    .controls input, .controls select, .position-card input, .position-card textarea, .position-card button {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(10,15,25,0.7);
-      color: #fff;
-      font-size: 14px;
-    }
-    body.light .controls input, body.light .controls select, body.light .position-card input, body.light .position-card textarea, body.light .position-card button {
-      background: #fff;
-      border-color: #d1d5db;
-      color: #1f2937;
-    }
-    .position-card textarea {
-      width: 100%;
-      height: 70px;
-      font-family: monospace;
-      margin-top: 8px;
-    }
-    .position-card button {
-      background: #1f6feb;
-      color: white;
-      border: none;
-      cursor: pointer;
-      margin-top: 8px;
-    }
-    .position-card button:hover { background: #388bfd; }
-    .pos-result {
-      margin-top: 10px;
-      font-family: monospace;
-      white-space: pre-wrap;
-      background: rgba(0,0,0,0.3);
-      padding: 10px;
-      border-radius: 6px;
-      font-size: 13px;
-    }
-    body.light .pos-result { background: #f3f4f6; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: rgba(10, 15, 25, 0.75);
-      border-radius: 12px;
-      overflow: hidden;
-      font-size: 14px;
-    }
-    body.light table {
-      background: rgba(255,255,255,0.92);
-    }
-    th, td {
-      padding: 10px 12px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    body.light th, body.light td {
-      border-bottom-color: #e5e7eb;
-    }
-    th {
-      background: rgba(0,0,0,0.3);
-      font-weight: 600;
-    }
-    body.light th { background: #f3f4f6; }
-    tr:hover { background: rgba(255,255,255,0.05); }
-    body.light tr:hover { background: #f9fafb; }
-    .about {
-      background: rgba(10, 15, 25, 0.65);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 14px;
-      padding: 20px 24px;
-      backdrop-filter: blur(6px);
-      font-size: 15px;
-      line-height: 1.65;
-      color: #d1d5db;
-    }
-    body.light .about {
-      background: rgba(255,255,255,0.9);
-      color: #374151;
-      border-color: #e5e7eb;
-    }
-    .download {
-      display: inline-block;
-      margin-top: 20px;
-      background: linear-gradient(135deg, #b91c1c, #1e40af);
-      color: white;
-      text-decoration: none;
-      padding: 12px 28px;
-      border-radius: 8px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    footer {
-      text-align: center;
-      padding: 30px;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-    .highlight {
-      background: rgba(185, 28, 28, 0.15);
-      border-left: 3px solid #b91c1c;
-      padding: 10px 14px;
-      margin-bottom: 16px;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-    .alerts {
-      text-align: center;
-      margin: 10px 0 30px;
-    }
-    .alerts a {
-      display: inline-block;
-      background: linear-gradient(135deg, #b91c1c, #1e40af);
-      color: white;
-      text-decoration: none;
-      padding: 14px 32px;
-      border-radius: 8px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      font-size: 16px;
-    }
-    .major-list {
-      margin-top: 12px;
-    }
-    .major-list li {
-      margin: 6px 0;
-    }
-    .watchlist-item {
-      margin: 8px 0;
-      padding: 8px 10px;
-      background: rgba(0,0,0,0.25);
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    body.light .watchlist-item { background: #f3f4f6; }
-  </style>
-</head>
-<body>
-  <header>
-    <button class="dark-toggle" onclick="toggleDark()">Dark / Light</button>
-    <img src="logo.png" alt="Patriot Orbit">
-    <div class="tagline">Adversary Space Activity Intelligence</div>
-  </header>
+#!/usr/bin/env python3
+"""
+Patriot Orbit — Full Automated Space Domain Awareness Updater
+Pulls public GP/TLE data for adversary constellations (PRC, CIS, NKOR, IRAN),
+detects significant orbital changes, generates detailed AUTO_NOTES.txt,
+and maintains MASTER_ALL_SPACE_OBJECTS.csv + previous_snapshot.csv.
 
-  <main>
-    <div class="alerts">
-      <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Get Alerts</a>
-    </div>
+Primary source: Space-Track.org (with credentials)
+Fallback: CelesTrak public GP endpoints
 
-    <h2>Position Calculator</h2>
-    <div class="position-card" id="position-card">
-      <div id="watchlist-status" style="margin-bottom:10px; color:#9ca3af;">No watchlist entries yet.</div>
-      <div id="watchlist-list"></div>
-      <hr style="border-color:rgba(255,255,255,0.1); margin:16px 0;">
-      <div style="font-weight:600; margin-bottom:6px;">Paste a TLE</div>
-      <textarea id="tle-input" placeholder="Paste TLE line 1 and line 2 (or full 3-line set)"></textarea>
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button onclick="calculateFromPaste()">Calculate Position</button>
-        <button onclick="addToWatchlist()" style="background:#238636;">Add to Watchlist</button>
-      </div>
-      <div id="paste-result" class="pos-result" style="display:none;"></div>
-    </div>
+Designed to run on a schedule via GitHub Actions.
+"""
 
-    <div class="stats" id="stats"></div>
+import os
+import sys
+import time
+import json
+import requests
+import pandas as pd
+from datetime import datetime
+from spacetrack import SpaceTrackClient
 
-    <h2>Major Movements</h2>
-    <div class="major-movements" id="major-movements">Loading major movements...</div>
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+IDENTITY = os.getenv('SPACETRACK_USER', 'bradenrbailey02@gmail.com')
+PASSWORD = os.getenv('SPACETRACK_PASS', 'Uscuscusc9777!!!')
 
-    <h2>Latest Activity Notes</h2>
-    <div class="notes" id="notes">Loading latest notes...</div>
+CELESTRAK_HEADERS = {
+    'User-Agent': 'PatriotOrbit/1.0 (public TLE/GP fallback; +https://patriotorbit.com)'
+}
 
-    <div id="highlight" class="highlight" style="display:none;"></div>
+CONSTELLATIONS = [
+    '~~YAOGAN~~', '~~BEIDOU~~', '~~GAOFEN~~', '~~QIANFAN~~',
+    '~~FENGYUN~~', '~~HAIYANG~~', '~~JILIN~~', '~~TIANHUI~~',
+    '~~GLONASS~~', '~~COSMOS~~', '~~KANOPUS~~', '~~RESURS~~',
+    '~~KWANGMYONGSONG~~', '~~MALLIGYONG~~',
+    '~~NOOR~~', '~~KHAYYAM~~', '~~SAFIR~~'
+]
 
-    <h2>Tracked Objects</h2>
-    <div class="controls">
-      <input type="text" id="search" placeholder="Search name or NORAD..." oninput="filterTable()">
-      <select id="country" onchange="filterTable()">
-        <option value="">All Countries</option>
-        <option value="PRC">China (PRC)</option>
-        <option value="CIS">Russia (CIS)</option>
-        <option value="NKOR">North Korea</option>
-        <option value="IRAN">Iran</option>
-      </select>
-      <select id="constellation" onchange="filterTable()">
-        <option value="">All Constellations</option>
-      </select>
-    </div>
-    <div style="overflow-x:auto;">
-      <table id="objects">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>NORAD ID</th>
-            <th>Country</th>
-            <th>Constellation</th>
-            <th>Epoch</th>
-            <th>Inclination</th>
-          </tr>
-        </thead>
-        <tbody id="table-body"></tbody>
-      </table>
-    </div>
+WATCHLIST_NORADS = [
+    # Add specific NORAD IDs here if desired
+    # '25544',
+    # '63230',
+]
 
-    <a class="download" href="MASTER_ALL_SPACE_OBJECTS.csv">Download Full Master CSV</a>
+COUNTRY_MAP = {
+    'YAOGAN': 'PRC', 'BEIDOU': 'PRC', 'GAOFEN': 'PRC', 'QIANFAN': 'PRC',
+    'FENGYUN': 'PRC', 'HAIYANG': 'PRC', 'JILIN': 'PRC', 'TIANHUI': 'PRC',
+    'GLONASS': 'CIS', 'COSMOS': 'CIS', 'KANOPUS': 'CIS', 'RESURS': 'CIS',
+    'KWANGMYONGSONG': 'NKOR', 'MALLIGYONG': 'NKOR',
+    'NOOR': 'IRAN', 'KHAYYAM': 'IRAN', 'SAFIR': 'IRAN'
+}
 
-    <h2>About</h2>
-    <div class="about">
-      Patriot Orbit is an open-source space domain awareness project that automatically tracks and summarizes public TLE data on adversary satellite activity. It updates regularly with notes on Chinese, Russian, North Korean, and Iranian objects, including debris, fresh epochs, and constellation activity.
-    </div>
-  </main>
+ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
 
-  <footer>
-    Patriot Orbit · Open Source Space Domain Awareness
-  </footer>
+PREV_SNAPSHOT = 'previous_snapshot.csv'
+MASTER_CSV = 'MASTER_ALL_SPACE_OBJECTS.csv'
+NOTES_FILE = 'AUTO_NOTES.txt'
+WATCHLIST_JSON = 'watchlist_tles.json'
+HTML_SNIPPET = 'major_movements_snippet.html'
 
-  <script>
-    let allObjects = [];
+INCLINATION_THRESHOLD = 0.05
+MEAN_MOTION_THRESHOLD = 0.001
 
-    function toggleDark() {
-      document.body.classList.toggle('light');
-    }
+# =============================================================================
+# UTILITIES
+# =============================================================================
+def rate_limit_sleep(seconds=3.0):
+    """Respect rate limits on both Space-Track and CelesTrak."""
+    time.sleep(seconds)
 
-    function formatNotes(text) {
-      if (!text) return 'No notes available yet.';
-      const lines = text.trim().split('\n');
-      let html = '';
-      let currentSection = '';
-      lines.forEach(line => {
-        line = line.trim();
-        if (!line) return;
-        if (line.startsWith('Patriot Orbit Update')) {
-          html += `<div class="update-time">${line}</div>`;
-        } else if (line.includes('Significant Orbital Changes') || line.includes('No significant orbital changes')) {
-          if (currentSection) html += '</ul></div>';
-          currentSection = '';
-          html += `<div class="section"><div class="section-title">${line}</div>`;
-          if (line.includes('Significant Orbital Changes')) html += '<ul>';
-          else html += '</div>';
-        } else if (line.includes('Activity:')) {
-          if (currentSection) html += '</ul></div>';
-          currentSection = line.replace(':', '');
-          html += `<div class="section"><div class="section-title">${currentSection}</div><ul>`;
-        } else if (line.startsWith('- ')) {
-          html += `<li>${line.substring(2)}</li>`;
-        } else if (line.startsWith('Total objects')) {
-          if (currentSection) html += '</ul></div>';
-          html += `<div class="total">${line}</div>`;
-          currentSection = '';
+def safe_numeric(df: pd.DataFrame, columns: list) -> pd.DataFrame:
+    """Convert listed columns to numeric where they exist."""
+    for col in columns:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    return df
+
+def log(msg: str):
+    """Simple timestamped log line."""
+    ts = datetime.utcnow().strftime('%H:%M:%S')
+    print(f"[{ts}] {msg}")
+
+# =============================================================================
+# DATA FETCHERS
+# =============================================================================
+def fetch_celestrak_json(name: str) -> list:
+    """Fetch GP JSON from CelesTrak for a constellation name (without ~~)."""
+    clean = name.replace('~~', '')
+    url = 'https://celestrak.org/NORAD/elements/gp.php'
+    params = {'NAME': clean, 'FORMAT': 'json'}
+    try:
+        r = requests.get(url, params=params, headers=CELESTRAK_HEADERS, timeout=60)
+        r.raise_for_status()
+        data = r.json()
+        if isinstance(data, list):
+            return data
+        return []
+    except Exception as e:
+        log(f"CelesTrak JSON failed for {clean}: {e}")
+        return []
+
+def fetch_celestrak_tle_by_norad(norad: str) -> tuple:
+    """Return (name, line1, line2) or (None, None, None)."""
+    url = 'https://celestrak.org/NORAD/elements/gp.php'
+    try:
+        r = requests.get(url, params={'CATNR': norad, 'FORMAT': 'tle'},
+                         headers=CELESTRAK_HEADERS, timeout=30)
+        r.raise_for_status()
+        lines = [ln.strip() for ln in r.text.splitlines() if ln.strip()]
+        if len(lines) >= 3 and lines[1].startswith('1 ') and lines[2].startswith('2 '):
+            return lines[0], lines[1], lines[2]
+    except Exception as e:
+        log(f"CelesTrak TLE failed for NORAD {norad}: {e}")
+    return None, None, None
+
+# =============================================================================
+# LOAD PREVIOUS SNAPSHOT
+# =============================================================================
+def load_previous_snapshot() -> pd.DataFrame | None:
+    if not os.path.exists(PREV_SNAPSHOT):
+        log("No previous snapshot found.")
+        return None
+    try:
+        df = pd.read_csv(PREV_SNAPSHOT)
+        if 'NORAD_CAT_ID' in df.columns:
+            df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
+        df = safe_numeric(df, ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS'])
+        log(f"Loaded previous snapshot: {len(df)} objects")
+        return df
+    except Exception as e:
+        log(f"Failed to load previous snapshot: {e}")
+        return None
+
+previous = load_previous_snapshot()
+
+# =============================================================================
+# MAIN DATA PULL
+# =============================================================================
+all_dfs = []
+watchlist_data = []
+pull_stats = []
+
+log("Starting hourly-compliant pull...")
+
+# Initialize Space-Track client (or fall back)
+st = None
+try:
+    st = SpaceTrackClient(IDENTITY, PASSWORD)
+    # Quick health check
+    _ = st.gp(norad_cat_id='25544', format='json')
+    log("Space-Track connection successful")
+except Exception as e:
+    log(f"Space-Track unavailable ({e}). Falling back to CelesTrak for this run.")
+    st = None
+
+for raw_name in CONSTELLATIONS:
+    clean_name = raw_name.replace('~~', '')
+    df = None
+    source = None
+    start = time.time()
+
+    # Prefer Space-Track
+    if st is not None:
+        try:
+            data = st.gp(
+                object_name=raw_name,
+                format='json',
+                epoch='%3Enow-10',
+                decay_date='null-val'
+            )
+            sats = json.loads(data)
+            if sats:
+                df = pd.DataFrame(sats)
+                source = 'Space-Track'
+        except Exception as e:
+            log(f"Space-Track error on {clean_name}: {e}")
+
+    # CelesTrak fallback
+    if df is None or df.empty:
+        sats = fetch_celestrak_json(raw_name)
+        if sats:
+            df = pd.DataFrame(sats)
+            source = 'CelesTrak'
+        rate_limit_sleep(2.5)
+
+    if df is not None and not df.empty:
+        df['CONSTELLATION'] = clean_name
+        df['COUNTRY_CODE'] = COUNTRY_MAP.get(clean_name, 'UNK')
+        df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
+        if not df.empty:
+            if 'NORAD_CAT_ID' in df.columns:
+                df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
+            all_dfs.append(df)
+            elapsed = time.time() - start
+            pull_stats.append((clean_name, len(df), source, elapsed))
+            log(f"Pulled {len(df):>5}  {clean_name:<16}  via {source:<12}  ({elapsed:.1f}s)")
+
+    rate_limit_sleep(1.5)
+
+# =============================================================================
+# WATCHLIST (optional specific NORADs)
+# =============================================================================
+if WATCHLIST_NORADS:
+    log("Processing watchlist...")
+    for norad in WATCHLIST_NORADS:
+        entry = {
+            'norad': norad,
+            'name': '',
+            'tle_line1': '',
+            'tle_line2': '',
+            'epoch': '',
+            'inclination': ''
         }
-      });
-      if (currentSection) html += '</ul></div>';
-      return html || text;
-    }
+        success = False
+        if st is not None:
+            try:
+                data = st.gp(norad_cat_id=norad, format='json',
+                              epoch='%3Enow-10', decay_date='null-val')
+                sats = json.loads(data)
+                if sats:
+                    s = sats[0]
+                    entry.update({
+                        'name': s.get('OBJECT_NAME', ''),
+                        'tle_line1': s.get('TLE_LINE1', ''),
+                        'tle_line2': s.get('TLE_LINE2', ''),
+                        'epoch': s.get('EPOCH', ''),
+                        'inclination': str(s.get('INCLINATION', '')),
+                    })
+                    success = True
+            except Exception as e:
+                log(f"Watchlist Space-Track failed for {norad}: {e}")
 
-    function parseCSV(text) {
-      const lines = text.trim().split('\n').filter(line => line.trim());
-      if (lines.length < 2) return [];
+        if not success:
+            name, l1, l2 = fetch_celestrak_tle_by_norad(norad)
+            if l1:
+                entry.update({'name': name or '', 'tle_line1': l1, 'tle_line2': l2 or ''})
+                success = True
 
-      const headers = lines[0].split(',').map(h => h.trim());
-      return lines.slice(1).map(line => {
-        const values = line.split(',').map(v => v.trim());
-        const obj = {};
-        headers.forEach((h, i) => {
-          obj[h] = values[i] || '';
-        });
-        return obj;
-      });
-    }
+        if success:
+            watchlist_data.append(entry)
+        rate_limit_sleep(1)
 
-    function renderStats() {
-      const total = allObjects.length;
-      const fresh = allObjects.filter(o => {
-        if (!o.EPOCH) return false;
-        const epoch = new Date(o.EPOCH);
-        return !isNaN(epoch) && (Date.now() - epoch) < 3 * 24 * 60 * 60 * 1000;
-      }).length;
-      const countries = new Set(allObjects.map(o => o.COUNTRY_CODE).filter(Boolean)).size;
-      document.getElementById('stats').innerHTML = `
-        <div class="stat"><div class="num">${total.toLocaleString()}</div><div class="label">Total Objects</div></div>
-        <div class="stat"><div class="num">${fresh.toLocaleString()}</div><div class="label">Fresh Epochs (3 days)</div></div>
-        <div class="stat"><div class="num">${countries}</div><div class="label">Countries</div></div>
-      `;
-    }
+    log(f"Watchlist complete: {len(watchlist_data)} objects")
 
-    function renderMajorMovements() {
-      const now = Date.now();
-      const recent = allObjects.filter(o => {
-        if (!o.EPOCH) return false;
-        const epoch = new Date(o.EPOCH);
-        return !isNaN(epoch) && (now - epoch) < 24 * 60 * 60 * 1000;
-      }).sort((a, b) => new Date(b.EPOCH) - new Date(a.EPOCH));
+with open(WATCHLIST_JSON, 'w') as f:
+    json.dump(watchlist_data, f, indent=2)
 
-      const el = document.getElementById('major-movements');
-      if (recent.length === 0) {
-        el.innerHTML = '<div class="section-title">No major movements detected in the last 24 hours.</div>';
-        return;
-      }
+# =============================================================================
+# CHANGE DETECTION + NOTES GENERATION
+# =============================================================================
+notes = []
+now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
+notes.append(f"Patriot Orbit Update — {now_str}")
+notes.append("")
 
-      const list = recent.slice(0, 15).map(o => `
-        <li><strong>${o.OBJECT_NAME || 'Unknown'}</strong> (${o.NORAD_CAT_ID || ''}) — ${o.CONSTELLATION || ''} — Epoch: ${(o.EPOCH || '').slice(0, 16)}</li>
-      `).join('');
+if all_dfs:
+    master = pd.concat(all_dfs, ignore_index=True)
+    master = master[master['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)].copy()
+    master = safe_numeric(master, ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS'])
 
-      el.innerHTML = `
-        <div class="section-title">${recent.length} objects with epochs in the last 24 hours</div>
-        <ul class="major-list">${list}</ul>
-        ${recent.length > 15 ? `<div style="margin-top:8px; font-size:13px; color:#9ca3af;">Showing top 15 most recent.</div>` : ''}
-      `;
-    }
+    log(f"Master dataframe assembled: {len(master)} objects")
 
-    function renderTable(objects) {
-      const tbody = document.getElementById('table-body');
-      tbody.innerHTML = objects.slice(0, 100).map(o => `
-        <tr>
-          <td>${o.OBJECT_NAME || ''}</td>
-          <td>${o.NORAD_CAT_ID || ''}</td>
-          <td>${o.COUNTRY_CODE || ''}</td>
-          <td>${o.CONSTELLATION || ''}</td>
-          <td>${(o.EPOCH || '').slice(0, 16)}</td>
-          <td>${o.INCLINATION || ''}</td>
-        </tr>
-      `).join('');
-    }
+    changes = []
+    if previous is not None and not previous.empty and 'NORAD_CAT_ID' in previous.columns:
+        # Only use columns that actually exist in the previous snapshot
+        prev_cols = ['NORAD_CAT_ID']
+        for col in ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS']:
+            if col in previous.columns:
+                prev_cols.append(col)
 
-    function filterTable() {
-      const search = document.getElementById('search').value.toLowerCase();
-      const country = document.getElementById('country').value;
-      const constel = document.getElementById('constellation').value;
-      const filtered = allObjects.filter(o => {
-        const nameMatch = (o.OBJECT_NAME || '').toLowerCase().includes(search);
-        const noradMatch = (o.NORAD_CAT_ID || '').toLowerCase().includes(search);
-        const countryMatch = !country || o.COUNTRY_CODE === country;
-        const constelMatch = !constel || o.CONSTELLATION === constel;
-        return (nameMatch || noradMatch) && countryMatch && constelMatch;
-      });
-      renderTable(filtered);
-    }
+        try:
+            merged = master.merge(
+                previous[prev_cols],
+                on='NORAD_CAT_ID',
+                how='left',
+                suffixes=('', '_prev')
+            )
 
-    function loadConstellations() {
-      const constels = [...new Set(allObjects.map(o => o.CONSTELLATION).filter(Boolean))].sort();
-      const select = document.getElementById('constellation');
-      select.innerHTML = '<option value="">All Constellations</option>';
-      constels.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        select.appendChild(opt);
-      });
-    }
+            # Inclination shifts
+            if 'INCLINATION_prev' in merged.columns:
+                mask = (merged['INCLINATION'] - merged['INCLINATION_prev']).abs() > INCLINATION_THRESHOLD
+                for _, row in merged[mask].iterrows():
+                    if pd.notna(row['INCLINATION']) and pd.notna(row['INCLINATION_prev']):
+                        changes.append(
+                            f"- {row.get('OBJECT_NAME', 'UNK')} (NORAD {row['NORAD_CAT_ID']}): "
+                            f"Inclination {row['INCLINATION_prev']:.2f}° → {row['INCLINATION']:.2f}°"
+                        )
 
-    function checkHighlights() {
-      const fresh = allObjects.filter(o => {
-        if (!o.EPOCH) return false;
-        const epoch = new Date(o.EPOCH);
-        return !isNaN(epoch) && (Date.now() - epoch) < 24 * 60 * 60 * 1000;
-      });
-      const el = document.getElementById('highlight');
-      if (fresh.length > 0) {
-        el.style.display = 'block';
-        el.innerHTML = `<strong>${fresh.length}</strong> objects have epochs from the last 24 hours.`;
-      } else {
-        el.style.display = 'none';
-      }
-    }
+            # Mean motion shifts
+            if 'MEAN_MOTION_prev' in merged.columns:
+                mask = (merged['MEAN_MOTION'] - merged['MEAN_MOTION_prev']).abs() > MEAN_MOTION_THRESHOLD
+                for _, row in merged[mask].iterrows():
+                    if pd.notna(row['MEAN_MOTION']) and pd.notna(row['MEAN_MOTION_prev']):
+                        changes.append(
+                            f"- {row.get('OBJECT_NAME', 'UNK')} (NORAD {row['NORAD_CAT_ID']}): "
+                            f"Mean motion {row['MEAN_MOTION_prev']:.4f} → {row['MEAN_MOTION']:.4f}"
+                        )
 
-    function showPosition(el, satrec, name) {
-      if (!satrec) {
-        el.textContent = 'Invalid TLE';
-        el.style.display = 'block';
-        return;
-      }
-      const now = new Date();
-      const pv = satellite.propagate(satrec, now);
-      const posEci = pv.position;
-      if (!posEci) {
-        el.textContent = 'Could not propagate (bad TLE or too old)';
-        el.style.display = 'block';
-        return;
-      }
-      const gmst = satellite.gstime(now);
-      const posGd = satellite.eciToGeodetic(posEci, gmst);
-      const lat = satellite.degreesLat(posGd.latitude);
-      const lon = satellite.degreesLong(posGd.longitude);
-      const alt = posGd.height;
-      el.textContent = `${name || 'Object'}\nLat: ${lat.toFixed(4)}°\nLon: ${lon.toFixed(4)}°\nAlt: ${alt.toFixed(1)} km\nUTC: ${now.toISOString()}`;
-      el.style.display = 'block';
-    }
+            log(f"Change detection complete: {len(changes)} significant shifts found")
+        except Exception as e:
+            log(f"Change detection error (continuing): {e}")
 
-    function calculateFromPaste() {
-      const raw = document.getElementById('tle-input').value.trim();
-      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      let line1, line2;
-      if (lines.length >= 3 && lines[1].startsWith('1 ') && lines[2].startsWith('2 ')) {
-        line1 = lines[1];
-        line2 = lines[2];
-      } else if (lines.length >= 2 && lines[0].startsWith('1 ') && lines[1].startsWith('2 ')) {
-        line1 = lines[0];
-        line2 = lines[1];
-      } else {
-        const el = document.getElementById('paste-result');
-        el.textContent = 'Need two valid TLE lines (starting with 1 and 2)';
-        el.style.display = 'block';
-        return;
-      }
-      const satrec = satellite.twoline2satrec(line1, line2);
-      const el = document.getElementById('paste-result');
-      showPosition(el, satrec, 'Pasted TLE');
-    }
+    # Persist snapshots
+    master.to_csv(PREV_SNAPSHOT, index=False)
+    master.to_csv(MASTER_CSV, index=False)
+    log(f"Saved {MASTER_CSV} and {PREV_SNAPSHOT}")
 
-    function getWatchlist() {
-      try { return JSON.parse(localStorage.getItem('patriotWatchlist') || '[]'); }
-      catch { return []; }
-    }
+    # Build notes content
+    if changes:
+        notes.append("Significant Orbital Changes Detected:")
+        notes.extend(changes[:25])
+        if len(changes) > 25:
+            notes.append(f"- ...and {len(changes) - 25} more changes")
+        notes.append("")
+    else:
+        notes.append("No significant orbital changes detected this run.")
+        notes.append("")
 
-    function saveWatchlist(list) {
-      localStorage.setItem('patriotWatchlist', JSON.stringify(list));
-    }
+    # Country / constellation summaries
+    china = master[master['COUNTRY_CODE'] == 'PRC']
+    notes.append(f"Chinese Activity: {len(china)} objects tracked.")
+    if not china.empty:
+        yaogan = china[china['CONSTELLATION'] == 'YAOGAN']
+        notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
+        for const in sorted(china['CONSTELLATION'].unique()):
+            count = len(china[china['CONSTELLATION'] == const])
+            if const != 'YAOGAN':
+                notes.append(f"- {const}: {count} objects")
+        notes.append("")
 
-    function renderWatchlist() {
-      const list = getWatchlist();
-      const status = document.getElementById('watchlist-status');
-      const container = document.getElementById('watchlist-list');
-      if (!status || !container) return;
-      if (list.length === 0) {
-        status.textContent = 'No watchlist entries yet.';
-        container.innerHTML = '';
-        return;
-      }
-      status.innerHTML = `<span style="color:#3fb950;">${list.length} satellite(s) in watchlist</span>`;
-      container.innerHTML = list.map((s, i) => `
-        <div class="watchlist-item">
-          <span><strong>${s.name || 'Unnamed'}</strong> (NORAD ${s.norad || '?'})</span>
-          <span>
-            <button onclick="calcFromSaved(${i})" style="margin-right:6px;">Position</button>
-            <button onclick="removeFromWatchlist(${i})" style="background:#da3633;">Remove</button>
-          </span>
-          <div id="pos-saved-${i}" class="pos-result" style="display:none; width:100%;"></div>
-        </div>
-      `).join('');
-    }
+    russia = master[master['COUNTRY_CODE'] == 'CIS']
+    notes.append(f"Russian Activity: {len(russia)} objects tracked.")
+    if not russia.empty:
+        notes.append("- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
+        for const in sorted(russia['CONSTELLATION'].unique()):
+            count = len(russia[russia['CONSTELLATION'] == const])
+            notes.append(f"- {const}: {count} objects")
+        notes.append("")
 
-    function addToWatchlist() {
-      const raw = document.getElementById('tle-input').value.trim();
-      if (!raw) return alert('Paste a TLE first');
-      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-      let line1, line2;
-      if (lines.length >= 3 && lines[1].startsWith('1 ')) {
-        line1 = lines[1]; line2 = lines[2];
-      } else if (lines.length >= 2) {
-        line1 = lines[0]; line2 = lines[1];
-      } else return alert('Need at least two TLE lines');
-      const norad = line1.substring(2, 7).trim();
-      const name = prompt('Name for this satellite (optional):') || `NORAD ${norad}`;
-      const list = getWatchlist();
-      list.push({ name, norad, tle_line1: line1, tle_line2: line2 });
-      saveWatchlist(list);
-      renderWatchlist();
-      alert('Added to watchlist');
-    }
+    nk = master[master['COUNTRY_CODE'] == 'NKOR']
+    notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
+    if not nk.empty:
+        notes.append("- Malligyong-1 remains the primary active object.")
+        notes.append("")
 
-    function removeFromWatchlist(idx) {
-      const list = getWatchlist();
-      list.splice(idx, 1);
-      saveWatchlist(list);
-      renderWatchlist();
-    }
+    iran = master[master['COUNTRY_CODE'] == 'IRAN']
+    notes.append(f"Iranian Activity: {len(iran)} objects tracked.")
+    if not iran.empty:
+        notes.append("- Includes Noor military satellites and related objects.")
+        notes.append("")
 
-    function calcFromSaved(idx) {
-      const s = getWatchlist()[idx];
-      if (!s) return;
-      const satrec = satellite.twoline2satrec(s.tle_line1, s.tle_line2);
-      showPosition(document.getElementById('pos-saved-' + idx), satrec, s.name);
-    }
+    notes.append(f"Total objects in master file: {len(master)}")
+    notes.append("")
+    notes.append("Pull statistics:")
+    for name, count, source, elapsed in pull_stats:
+        notes.append(f"  {name:<16} {count:>5} objects  ({source}, {elapsed:.1f}s)")
 
-    async function loadData() {
-      try {
-        const notesRes = await fetch('AUTO_NOTES.txt');
-        const notesText = await notesRes.text();
-        document.getElementById('notes').innerHTML = formatNotes(notesText);
+else:
+    notes.append("No data pulled this run (both Space-Track and CelesTrak failed).")
+    log("WARNING: No data retrieved from either source.")
 
-        const csvRes = await fetch('MASTER_ALL_SPACE_OBJECTS.csv');
-        const csvText = await csvRes.text();
-        allObjects = parseCSV(csvText);
-        renderStats();
-        renderMajorMovements();
-        loadConstellations();
-        renderTable(allObjects);
-        checkHighlights();
-      } catch (e) {
-        document.getElementById('notes').textContent = 'Failed to load data.';
-        document.getElementById('major-movements').textContent = 'Failed to load major movements.';
-        console.error(e);
-      }
-    }
+# Write notes
+with open(NOTES_FILE, 'w') as f:
+    f.write('\n'.join(notes))
+log(f"Wrote {NOTES_FILE}")
 
-    loadData();
-    renderWatchlist();
-  </script>
-</body>
-</html>
+# Optional: simple HTML snippet for the site (major movements)
+if changes:
+    html_lines = ['<ul class="movements">']
+    for c in changes[:15]:
+        html_lines.append(f"  <li>{c[2:]}</li>")
+    if len(changes) > 15:
+        html_lines.append(f"  <li>...and {len(changes) - 15} more</li>")
+    html_lines.append('</ul>')
+    with open(HTML_SNIPPET, 'w') as f:
+        f.write('\n'.join(html_lines))
+    log(f"Wrote optional {HTML_SNIPPET}")
+
+log("Run complete.")
