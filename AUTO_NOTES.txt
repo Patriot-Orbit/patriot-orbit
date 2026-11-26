@@ -1,4 +1,4 @@
-Patriot Orbit Update — 2026-11-26 13:36 UTC
+Patriot Orbit Update — 2026-11-26 15:15 UTC
 
 No significant orbital changes detected this run.
 
@@ -32,14 +32,14 @@ Pull statistics:
   BEIDOU              56 objects  (Space-Track, 0.3s)
   GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.4s)
-  FENGYUN           1944 objects  (Space-Track, 0.4s)
-  HAIYANG             10 objects  (Space-Track, 0.5s)
+  FENGYUN           1944 objects  (Space-Track, 0.5s)
+  HAIYANG             10 objects  (Space-Track, 0.3s)
   JILIN               23 objects  (Space-Track, 0.3s)
-  TIANHUI             14 objects  (Space-Track, 0.3s)
-  GLONASS            140 objects  (Space-Track, 0.3s)
+  TIANHUI             14 objects  (Space-Track, 0.4s)
+  GLONASS            140 objects  (Space-Track, 0.4s)
   COSMOS            2806 objects  (Space-Track, 0.5s)
-  KANOPUS              5 objects  (Space-Track, 0.3s)
-  RESURS               9 objects  (Space-Track, 0.3s)
-  MALLIGYONG           1 objects  (Space-Track, 0.3s)
-  KHAYYAM              1 objects  (Space-Track, 0.3s)
-  SAFIR                2 objects  (Space-Track, 0.3s)
+  KANOPUS              5 objects  (Space-Track, 0.4s)
+  RESURS               9 objects  (Space-Track, 0.4s)
+  MALLIGYONG           1 objects  (Space-Track, 0.4s)
+  KHAYYAM              1 objects  (Space-Track, 0.4s)
+  SAFIR                2 objects  (Space-Track, 0.4s)
