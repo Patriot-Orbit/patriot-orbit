@@ -1,28 +1,49 @@
-Patriot Orbit Update — 2026-11-25 21:14 UTC
+Patriot Orbit Update — 2026-11-26 00:14 UTC
 
 Significant Orbital Changes Detected:
-- YAOGAN-35 03C (NORAD 53320): Mean motion shifted 15.5931 → 15.5945
-- YAOGAN-36 02C (NORAD 54045): Mean motion shifted 15.6613 → 15.6635
-- YAOGAN-43 02A (NORAD 60945): Mean motion shifted 15.7179 → 15.7210
-- YAOGAN 25C DEB (NORAD 69732): Mean motion shifted 13.8249 → 13.8260
-- YAOGAN 25C DEB (NORAD 69733): Mean motion shifted 13.5206 → 13.5217
-- YAOGAN-50 02 DEB (NORAD 100575): Mean motion shifted 13.9127 → 13.9139
-- YAOGAN-50 02 DEB (NORAD 100576): Mean motion shifted 14.4478 → 14.4488
-- YAOGAN-50 02 DEB (NORAD 100578): Mean motion shifted 14.3909 → 14.3927
-- YAOGAN-50 02 DEB (NORAD 100579): Mean motion shifted 14.2982 → 14.2993
-- YAOGAN-50 02 DEB (NORAD 100581): Mean motion shifted 14.3286 → 14.3303
-- YAOGAN-50 02 DEB (NORAD 100586): Mean motion shifted 14.1330 → 14.1343
-- YAOGAN-50 02 DEB (NORAD 100592): Mean motion shifted 14.1536 → 14.2471
-- YAOGAN-50 02 DEB (NORAD 100596): Mean motion shifted 14.0104 → 14.0115
-- YAOGAN-50 02 DEB (NORAD 100598): Mean motion shifted 14.1684 → 14.1700
-- YAOGAN-50 02 DEB (NORAD 100805): Mean motion shifted 14.0561 → 14.0571
-- ...and 84 more changes
+- QIANFAN-1 (NORAD 60379): Mean motion 13.5565 → 13.5616
+- QIANFAN-3 (NORAD 60381): Mean motion 13.4929 → 13.4494
+- QIANFAN-4 (NORAD 60382): Mean motion 13.5026 → 13.4680
+- QIANFAN-5 (NORAD 60383): Mean motion 13.5081 → 13.5101
+- QIANFAN-11 (NORAD 60389): Mean motion 13.5745 → 13.6052
+- QIANFAN-13 (NORAD 60391): Mean motion 13.5729 → 13.6035
+- QIANFAN-15 (NORAD 60393): Mean motion 13.5042 → 13.4627
+- QIANFAN-38 (NORAD 62239): Mean motion 13.6263 → 13.5920
+- QIANFAN-46 (NORAD 62247): Mean motion 13.4693 → 13.4717
+- QIANFAN-47 (NORAD 62248): Mean motion 13.4677 → 13.4598
+- QIANFAN-128 (NORAD 69074): Mean motion 13.5103 → 13.4705
+- QIANFAN-130 (NORAD 69076): Mean motion 13.5101 → 13.4699
+- QIANFAN-177 (NORAD 69394): Mean motion 13.4695 → 13.5104
+- QIANFAN-201 (NORAD 69800): Mean motion 13.5316 → 13.5777
+- QIANFAN-204 (NORAD 69803): Mean motion 13.5153 → 13.5110
+- QIANFAN-206 (NORAD 69805): Mean motion 13.5803 → 13.5734
+- QIANFAN-207 (NORAD 69806): Mean motion 13.5260 → 13.5243
+- QIANFAN-208 (NORAD 69807): Mean motion 13.5311 → 13.5299
+- QIANFAN-212 (NORAD 69811): Mean motion 13.6032 → 13.5989
+- QIANFAN-214 (NORAD 69813): Mean motion 13.6347 → 13.6324
+- QIANFAN-215 (NORAD 69814): Mean motion 13.8272 → 13.8217
+- FENGYUN 1C DEB (NORAD 36225): Mean motion 15.5745 → 15.5794
+- FENGYUN 1C DEB (NORAD 37081): Mean motion 14.2443 → 14.2456
+- FENGYUN 1C DEB (NORAD 38514): Mean motion 14.2137 → 14.2148
+- COSMOS 2251 DEB (NORAD 34036): Mean motion 15.4522 → 15.4559
+- ...and 1 more changes
 
 Chinese Activity: 2763 objects tracked.
 - Yaogan: 268 objects (includes known debris and triplets).
+- BEIDOU: 64 objects
+- FENGYUN: 2027 objects
+- GAOFEN: 63 objects
+- HAIYANG: 11 objects
+- JILIN: 41 objects
+- QIANFAN: 275 objects
+- TIANHUI: 14 objects
 
-Russian Activity: 3041 objects tracked.
+Russian Activity: 3042 objects tracked.
 - Includes GLONASS navigation and COSMOS reconnaissance satellites.
+- COSMOS: 2885 objects
+- GLONASS: 143 objects
+- KANOPUS: 5 objects
+- RESURS: 9 objects
 
 North Korean Activity: 1 objects tracked.
 - Malligyong-1 remains the primary active object.
@@ -30,4 +51,21 @@ North Korean Activity: 1 objects tracked.
 Iranian Activity: 3 objects tracked.
 - Includes Noor military satellites and related objects.
 
-Total objects in master file: 5808
+Total objects in master file: 5809
+
+Pull statistics:
+  YAOGAN             268 objects  (CelesTrak, 3.1s)
+  BEIDOU              64 objects  (CelesTrak, 3.0s)
+  GAOFEN              63 objects  (CelesTrak, 2.9s)
+  QIANFAN            275 objects  (CelesTrak, 3.1s)
+  FENGYUN           2027 objects  (CelesTrak, 3.1s)
+  HAIYANG             11 objects  (CelesTrak, 2.9s)
+  JILIN               41 objects  (CelesTrak, 2.9s)
+  TIANHUI             14 objects  (CelesTrak, 2.9s)
+  GLONASS            143 objects  (CelesTrak, 2.9s)
+  COSMOS            2885 objects  (CelesTrak, 5.0s)
+  KANOPUS              5 objects  (CelesTrak, 4.1s)
+  RESURS               9 objects  (CelesTrak, 2.9s)
+  MALLIGYONG           1 objects  (CelesTrak, 2.9s)
+  KHAYYAM              1 objects  (CelesTrak, 3.1s)
+  SAFIR                2 objects  (CelesTrak, 4.7s)
