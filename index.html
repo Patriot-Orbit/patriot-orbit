@@ -1,232 +1,643 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Patriot Orbit — Space Domain Awareness</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Patriot Orbit</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.1.4/satellite.min.js"></script>
   <style>
-    :root {
-      --bg: #0a0e17;
-      --card: #111827;
-      --border: #1f2937;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --accent: #3b82f6;
-      --green: #10b981;
-      --red: #ef4444;
-      --yellow: #f59e0b;
-    }
-    * { box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #000 url('background.jpg') center/cover no-repeat fixed;
+      color: #e8eef7;
+      min-height: 100vh;
+      transition: background 0.3s;
+    }
+    body.light {
+      background: #f4f6f9 url('background.jpg') center/cover no-repeat fixed;
+      color: #1f2937;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 5, 15, 0.55);
+      z-index: -1;
+    }
+    body.light::before {
+      background: rgba(255, 255, 255, 0.75);
     }
     header {
-      padding: 2rem 1.5rem;
-      border-bottom: 1px solid var(--border);
       text-align: center;
+      padding: 40px 20px 20px;
+      position: relative;
     }
-    header h1 { margin: 0; font-size: 1.8rem; letter-spacing: -0.02em; }
-    header p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.95rem; }
-    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
+    header img {
+      width: 280px;
+      max-width: 90%;
+      height: auto;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
     }
-    @media (max-width: 800px) {
-      .grid { grid-template-columns: 1fr; }
+    .tagline {
+      margin-top: 12px;
+      font-size: 14px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #c0c8d4;
+      font-weight: 500;
     }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem;
+    .dark-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
     }
-    .card h2 {
-      margin: 0 0 0.75rem;
-      font-size: 1.15rem;
+    body.light .dark-toggle {
+      background: rgba(0,0,0,0.1);
+      color: #1f2937;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 10px 20px 80px;
+    }
+    h2 {
+      font-size: 22px;
+      font-weight: 600;
+      margin: 36px 0 14px;
+      color: #fff;
+    }
+    body.light h2 { color: #111827; }
+    .stats {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
     }
-    .card h2::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
+    .stat {
+      background: rgba(10, 15, 25, 0.75);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-width: 140px;
+      backdrop-filter: blur(6px);
     }
-    #notes, #movements {
+    body.light .stat {
+      background: rgba(255,255,255,0.9);
+      border-color: #e5e7eb;
+    }
+    .stat .num {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+    }
+    body.light .stat .num { color: #1e40af; }
+    .stat .label {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+    .notes, .major-movements, .position-card {
+      background: rgba(10, 15, 25, 0.75);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+      font-size: 15.5px;
+      line-height: 1.7;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+    }
+    body.light .notes, body.light .major-movements, body.light .position-card {
+      background: rgba(255,255,255,0.92);
+      border-color: #e5e7eb;
+      color: #1f2937;
+    }
+    .notes .update-time {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+    .notes .section { margin-bottom: 16px; }
+    .notes .section-title { font-weight: 600; margin-bottom: 4px; }
+    .notes .section ul { margin-left: 20px; margin-top: 4px; }
+    .notes .section li { margin: 3px 0; }
+    .notes .total {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-weight: 600;
+    }
+    body.light .notes .total { border-top-color: #e5e7eb; }
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+    }
+    .controls input, .controls select, .position-card input, .position-card textarea, .position-card button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(10,15,25,0.7);
+      color: #fff;
+      font-size: 14px;
+    }
+    body.light .controls input, body.light .controls select, body.light .position-card input, body.light .position-card textarea, body.light .position-card button {
+      background: #fff;
+      border-color: #d1d5db;
+      color: #1f2937;
+    }
+    .position-card textarea {
+      width: 100%;
+      height: 70px;
+      font-family: monospace;
+      margin-top: 8px;
+    }
+    .position-card button {
+      background: #1f6feb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .position-card button:hover { background: #388bfd; }
+    .pos-result {
+      margin-top: 10px;
+      font-family: monospace;
       white-space: pre-wrap;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.85rem;
-      line-height: 1.55;
-      color: var(--text);
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 13px;
     }
-    #movements ul { margin: 0; padding-left: 1.2rem; }
-    #movements li { margin-bottom: 0.35rem; }
+    body.light .pos-result { background: #f3f4f6; }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.82rem;
+      background: rgba(10, 15, 25, 0.75);
+      border-radius: 12px;
+      overflow: hidden;
+      font-size: 14px;
+    }
+    body.light table {
+      background: rgba(255,255,255,0.92);
     }
     th, td {
+      padding: 10px 12px;
       text-align: left;
-      padding: 0.45rem 0.6rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
-    th { color: var(--muted); font-weight: 500; }
-    tr:hover td { background: rgba(59, 130, 246, 0.06); }
-    .country-PRC { color: #f87171; }
-    .country-CIS { color: #60a5fa; }
-    .country-NKOR { color: #fbbf24; }
-    .country-IRAN { color: #34d399; }
-    .status {
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-top: 0.5rem;
+    body.light th, body.light td {
+      border-bottom-color: #e5e7eb;
+    }
+    th {
+      background: rgba(0,0,0,0.3);
+      font-weight: 600;
+    }
+    body.light th { background: #f3f4f6; }
+    tr:hover { background: rgba(255,255,255,0.05); }
+    body.light tr:hover { background: #f9fafb; }
+    .about {
+      background: rgba(10, 15, 25, 0.65);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 20px 24px;
+      backdrop-filter: blur(6px);
+      font-size: 15px;
+      line-height: 1.65;
+      color: #d1d5db;
+    }
+    body.light .about {
+      background: rgba(255,255,255,0.9);
+      color: #374151;
+      border-color: #e5e7eb;
+    }
+    .download {
+      display: inline-block;
+      margin-top: 20px;
+      background: linear-gradient(135deg, #b91c1c, #1e40af);
+      color: white;
+      text-decoration: none;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
     }
     footer {
       text-align: center;
-      padding: 2rem 1rem;
-      color: var(--muted);
-      font-size: 0.8rem;
-      border-top: 1px solid var(--border);
+      padding: 30px;
+      font-size: 13px;
+      color: #9ca3af;
     }
+    .highlight {
+      background: rgba(185, 28, 28, 0.15);
+      border-left: 3px solid #b91c1c;
+      padding: 10px 14px;
+      margin-bottom: 16px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    .alerts {
+      text-align: center;
+      margin: 10px 0 30px;
+    }
+    .alerts a {
+      display: inline-block;
+      background: linear-gradient(135deg, #b91c1c, #1e40af);
+      color: white;
+      text-decoration: none;
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-size: 16px;
+    }
+    .major-list {
+      margin-top: 12px;
+    }
+    .major-list li {
+      margin: 6px 0;
+    }
+    .watchlist-item {
+      margin: 8px 0;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    body.light .watchlist-item { background: #f3f4f6; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Patriot Orbit</h1>
-    <p>Open-source space domain awareness · Public TLE/GP data</p>
+    <button class="dark-toggle" onclick="toggleDark()">Dark / Light</button>
+    <img src="logo.png" alt="Patriot Orbit">
+    <div class="tagline">Adversary Space Activity Intelligence</div>
   </header>
 
   <main>
-    <div class="grid">
-      <div class="card">
-        <h2>Latest Update</h2>
-        <div id="notes">Loading notes…</div>
-      </div>
-      <div class="card">
-        <h2>Major Movements</h2>
-        <div id="movements">Loading…</div>
-      </div>
+    <div class="alerts">
+      <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Get Alerts</a>
     </div>
 
-    <div class="card" style="margin-top: 1.25rem;">
-      <h2>Tracked Objects</h2>
-      <div style="overflow-x: auto;">
-        <table id="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>NORAD</th>
-              <th>Constellation</th>
-              <th>Country</th>
-              <th>Inclination</th>
-              <th>Mean Motion</th>
-              <th>Epoch</th>
-            </tr>
-          </thead>
-          <tbody id="tbody">
-            <tr><td colspan="7">Loading data…</td></tr>
-          </tbody>
-        </table>
+    <h2>Position Calculator</h2>
+    <div class="position-card" id="position-card">
+      <div id="watchlist-status" style="margin-bottom:10px; color:#9ca3af;">No watchlist entries yet.</div>
+      <div id="watchlist-list"></div>
+      <hr style="border-color:rgba(255,255,255,0.1); margin:16px 0;">
+      <div style="font-weight:600; margin-bottom:6px;">Paste a TLE</div>
+      <textarea id="tle-input" placeholder="Paste TLE line 1 and line 2 (or full 3-line set)"></textarea>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button onclick="calculateFromPaste()">Calculate Position</button>
+        <button onclick="addToWatchlist()" style="background:#238636;">Add to Watchlist</button>
       </div>
-      <div class="status" id="status"></div>
+      <div id="paste-result" class="pos-result" style="display:none;"></div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <h2>Major Movements</h2>
+    <div class="major-movements" id="major-movements">Loading major movements...</div>
+
+    <h2>Latest Activity Notes</h2>
+    <div class="notes" id="notes">Loading latest notes...</div>
+
+    <div id="highlight" class="highlight" style="display:none;"></div>
+
+    <h2>Tracked Objects</h2>
+    <div class="controls">
+      <input type="text" id="search" placeholder="Search name or NORAD..." oninput="filterTable()">
+      <select id="country" onchange="filterTable()">
+        <option value="">All Countries</option>
+        <option value="PRC">China (PRC)</option>
+        <option value="CIS">Russia (CIS)</option>
+        <option value="NKOR">North Korea</option>
+        <option value="IRAN">Iran</option>
+      </select>
+      <select id="constellation" onchange="filterTable()">
+        <option value="">All Constellations</option>
+      </select>
+    </div>
+    <div style="overflow-x:auto;">
+      <table id="objects">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>NORAD ID</th>
+            <th>Country</th>
+            <th>Constellation</th>
+            <th>Epoch</th>
+            <th>Inclination</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <a class="download" href="MASTER_ALL_SPACE_OBJECTS.csv">Download Full Master CSV</a>
+
+    <h2>About</h2>
+    <div class="about">
+      Patriot Orbit is an open-source space domain awareness project that automatically tracks and summarizes public TLE data on adversary satellite activity. It updates regularly with notes on Chinese, Russian, North Korean, and Iranian objects, including debris, fresh epochs, and constellation activity.
     </div>
   </main>
 
   <footer>
-    Data sourced from Space-Track.org (preferred) with CelesTrak public fallback.<br>
-    Updates run on a schedule. Last refresh shown in the notes above.
+    Patriot Orbit · Open Source Space Domain Awareness
   </footer>
 
   <script>
-    async function loadNotes() {
-      try {
-        const res = await fetch('AUTO_NOTES.txt?' + Date.now());
-        if (!res.ok) throw new Error();
-        const text = await res.text();
-        document.getElementById('notes').textContent = text.trim() || 'No notes available.';
-      } catch {
-        document.getElementById('notes').textContent = 'Notes not available yet.';
-      }
+    let allObjects = [];
+
+    function toggleDark() {
+      document.body.classList.toggle('light');
     }
 
-    async function loadMovements() {
-      try {
-        const res = await fetch('major_movements_snippet.html?' + Date.now());
-        if (!res.ok) throw new Error();
-        const html = await res.text();
-        document.getElementById('movements').innerHTML = html.trim() || '<p>No major movements detected.</p>';
-      } catch {
-        document.getElementById('movements').innerHTML = '<p>No major movements detected this run.</p>';
-      }
-    }
-
-    async function loadTable() {
-      const tbody = document.getElementById('tbody');
-      const status = document.getElementById('status');
-      try {
-        const res = await fetch('MASTER_ALL_SPACE_OBJECTS.csv?' + Date.now());
-        if (!res.ok) throw new Error();
-        const text = await res.text();
-        const lines = text.trim().split('\n');
-        if (lines.length < 2) {
-          tbody.innerHTML = '<tr><td colspan="7">No data yet.</td></tr>';
-          return;
+    function formatNotes(text) {
+      if (!text) return 'No notes available yet.';
+      const lines = text.trim().split('\n');
+      let html = '';
+      let currentSection = '';
+      lines.forEach(line => {
+        line = line.trim();
+        if (!line) return;
+        if (line.startsWith('Patriot Orbit Update')) {
+          html += `<div class="update-time">${line}</div>`;
+        } else if (line.includes('Significant Orbital Changes') || line.includes('No significant orbital changes')) {
+          if (currentSection) html += '</ul></div>';
+          currentSection = '';
+          html += `<div class="section"><div class="section-title">${line}</div>`;
+          if (line.includes('Significant Orbital Changes')) html += '<ul>';
+          else html += '</div>';
+        } else if (line.includes('Activity:')) {
+          if (currentSection) html += '</ul></div>';
+          currentSection = line.replace(':', '');
+          html += `<div class="section"><div class="section-title">${currentSection}</div><ul>`;
+        } else if (line.startsWith('- ')) {
+          html += `<li>${line.substring(2)}</li>`;
+        } else if (line.startsWith('Total objects')) {
+          if (currentSection) html += '</ul></div>';
+          html += `<div class="total">${line}</div>`;
+          currentSection = '';
         }
-        const headers = lines[0].split(',');
-        const nameIdx = headers.indexOf('OBJECT_NAME');
-        const noradIdx = headers.indexOf('NORAD_CAT_ID');
-        const constIdx = headers.indexOf('CONSTELLATION');
-        const countryIdx = headers.indexOf('COUNTRY_CODE');
-        const incIdx = headers.indexOf('INCLINATION');
-        const mmIdx = headers.indexOf('MEAN_MOTION');
-        const epochIdx = headers.indexOf('EPOCH');
+      });
+      if (currentSection) html += '</ul></div>';
+      return html || text;
+    }
 
-        const rows = lines.slice(1).map(line => {
-          const cols = line.split(',');
-          return {
-            name: cols[nameIdx] || '',
-            norad: cols[noradIdx] || '',
-            constellation: cols[constIdx] || '',
-            country: cols[countryIdx] || '',
-            inclination: cols[incIdx] || '',
-            meanMotion: cols[mmIdx] || '',
-            epoch: cols[epochIdx] || ''
-          };
-        }).filter(r => r.norad);
+    function parseCSV(text) {
+      const lines = text.trim().split('\n').filter(line => line.trim());
+      if (lines.length < 2) return [];
 
-        rows.sort((a, b) => a.name.localeCompare(b.name));
+      const headers = lines[0].split(',').map(h => h.trim());
+      return lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim());
+        const obj = {};
+        headers.forEach((h, i) => {
+          obj[h] = values[i] || '';
+        });
+        return obj;
+      });
+    }
 
-        tbody.innerHTML = rows.slice(0, 500).map(r => `
-          <tr>
-            <td>${r.name}</td>
-            <td>${r.norad}</td>
-            <td>${r.constellation}</td>
-            <td class="country-${r.country}">${r.country}</td>
-            <td>${r.inclination ? parseFloat(r.inclination).toFixed(2) : ''}</td>
-            <td>${r.meanMotion ? parseFloat(r.meanMotion).toFixed(4) : ''}</td>
-            <td>${r.epoch ? r.epoch.slice(0, 16) : ''}</td>
-          </tr>
-        `).join('');
+    function renderStats() {
+      const total = allObjects.length;
+      const fresh = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return !isNaN(epoch) && (Date.now() - epoch) < 3 * 24 * 60 * 60 * 1000;
+      }).length;
+      const countries = new Set(allObjects.map(o => o.COUNTRY_CODE).filter(Boolean)).size;
+      document.getElementById('stats').innerHTML = `
+        <div class="stat"><div class="num">${total.toLocaleString()}</div><div class="label">Total Objects</div></div>
+        <div class="stat"><div class="num">${fresh.toLocaleString()}</div><div class="label">Fresh Epochs (3 days)</div></div>
+        <div class="stat"><div class="num">${countries}</div><div class="label">Countries</div></div>
+      `;
+    }
 
-        status.textContent = `Showing ${Math.min(rows.length, 500)} of ${rows.length} objects.`;
-      } catch (e) {
-        tbody.innerHTML = '<tr><td colspan="7">Could not load data.</td></tr>';
-        status.textContent = '';
+    function renderMajorMovements() {
+      const now = Date.now();
+      const recent = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return !isNaN(epoch) && (now - epoch) < 24 * 60 * 60 * 1000;
+      }).sort((a, b) => new Date(b.EPOCH) - new Date(a.EPOCH));
+
+      const el = document.getElementById('major-movements');
+      if (recent.length === 0) {
+        el.innerHTML = '<div class="section-title">No major movements detected in the last 24 hours.</div>';
+        return;
+      }
+
+      const list = recent.slice(0, 15).map(o => `
+        <li><strong>${o.OBJECT_NAME || 'Unknown'}</strong> (${o.NORAD_CAT_ID || ''}) — ${o.CONSTELLATION || ''} — Epoch: ${(o.EPOCH || '').slice(0, 16)}</li>
+      `).join('');
+
+      el.innerHTML = `
+        <div class="section-title">${recent.length} objects with epochs in the last 24 hours</div>
+        <ul class="major-list">${list}</ul>
+        ${recent.length > 15 ? `<div style="margin-top:8px; font-size:13px; color:#9ca3af;">Showing top 15 most recent.</div>` : ''}
+      `;
+    }
+
+    function renderTable(objects) {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = objects.slice(0, 100).map(o => `
+        <tr>
+          <td>${o.OBJECT_NAME || ''}</td>
+          <td>${o.NORAD_CAT_ID || ''}</td>
+          <td>${o.COUNTRY_CODE || ''}</td>
+          <td>${o.CONSTELLATION || ''}</td>
+          <td>${(o.EPOCH || '').slice(0, 16)}</td>
+          <td>${o.INCLINATION || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    function filterTable() {
+      const search = document.getElementById('search').value.toLowerCase();
+      const country = document.getElementById('country').value;
+      const constel = document.getElementById('constellation').value;
+      const filtered = allObjects.filter(o => {
+        const nameMatch = (o.OBJECT_NAME || '').toLowerCase().includes(search);
+        const noradMatch = (o.NORAD_CAT_ID || '').toLowerCase().includes(search);
+        const countryMatch = !country || o.COUNTRY_CODE === country;
+        const constelMatch = !constel || o.CONSTELLATION === constel;
+        return (nameMatch || noradMatch) && countryMatch && constelMatch;
+      });
+      renderTable(filtered);
+    }
+
+    function loadConstellations() {
+      const constels = [...new Set(allObjects.map(o => o.CONSTELLATION).filter(Boolean))].sort();
+      const select = document.getElementById('constellation');
+      select.innerHTML = '<option value="">All Constellations</option>';
+      constels.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c;
+        opt.textContent = c;
+        select.appendChild(opt);
+      });
+    }
+
+    function checkHighlights() {
+      const fresh = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return !isNaN(epoch) && (Date.now() - epoch) < 24 * 60 * 60 * 1000;
+      });
+      const el = document.getElementById('highlight');
+      if (fresh.length > 0) {
+        el.style.display = 'block';
+        el.innerHTML = `<strong>${fresh.length}</strong> objects have epochs from the last 24 hours.`;
+      } else {
+        el.style.display = 'none';
       }
     }
 
-    loadNotes();
-    loadMovements();
-    loadTable();
+    function showPosition(el, satrec, name) {
+      if (!satrec) {
+        el.textContent = 'Invalid TLE';
+        el.style.display = 'block';
+        return;
+      }
+      const now = new Date();
+      const pv = satellite.propagate(satrec, now);
+      const posEci = pv.position;
+      if (!posEci) {
+        el.textContent = 'Could not propagate (bad TLE or too old)';
+        el.style.display = 'block';
+        return;
+      }
+      const gmst = satellite.gstime(now);
+      const posGd = satellite.eciToGeodetic(posEci, gmst);
+      const lat = satellite.degreesLat(posGd.latitude);
+      const lon = satellite.degreesLong(posGd.longitude);
+      const alt = posGd.height;
+      el.textContent = `${name || 'Object'}\nLat: ${lat.toFixed(4)}°\nLon: ${lon.toFixed(4)}°\nAlt: ${alt.toFixed(1)} km\nUTC: ${now.toISOString()}`;
+      el.style.display = 'block';
+    }
+
+    function calculateFromPaste() {
+      const raw = document.getElementById('tle-input').value.trim();
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let line1, line2;
+      if (lines.length >= 3 && lines[1].startsWith('1 ') && lines[2].startsWith('2 ')) {
+        line1 = lines[1];
+        line2 = lines[2];
+      } else if (lines.length >= 2 && lines[0].startsWith('1 ') && lines[1].startsWith('2 ')) {
+        line1 = lines[0];
+        line2 = lines[1];
+      } else {
+        const el = document.getElementById('paste-result');
+        el.textContent = 'Need two valid TLE lines (starting with 1 and 2)';
+        el.style.display = 'block';
+        return;
+      }
+      const satrec = satellite.twoline2satrec(line1, line2);
+      const el = document.getElementById('paste-result');
+      showPosition(el, satrec, 'Pasted TLE');
+    }
+
+    function getWatchlist() {
+      try { return JSON.parse(localStorage.getItem('patriotWatchlist') || '[]'); }
+      catch { return []; }
+    }
+
+    function saveWatchlist(list) {
+      localStorage.setItem('patriotWatchlist', JSON.stringify(list));
+    }
+
+    function renderWatchlist() {
+      const list = getWatchlist();
+      const status = document.getElementById('watchlist-status');
+      const container = document.getElementById('watchlist-list');
+      if (!status || !container) return;
+      if (list.length === 0) {
+        status.textContent = 'No watchlist entries yet.';
+        container.innerHTML = '';
+        return;
+      }
+      status.innerHTML = `<span style="color:#3fb950;">${list.length} satellite(s) in watchlist</span>`;
+      container.innerHTML = list.map((s, i) => `
+        <div class="watchlist-item">
+          <span><strong>${s.name || 'Unnamed'}</strong> (NORAD ${s.norad || '?'})</span>
+          <span>
+            <button onclick="calcFromSaved(${i})" style="margin-right:6px;">Position</button>
+            <button onclick="removeFromWatchlist(${i})" style="background:#da3633;">Remove</button>
+          </span>
+          <div id="pos-saved-${i}" class="pos-result" style="display:none; width:100%;"></div>
+        </div>
+      `).join('');
+    }
+
+    function addToWatchlist() {
+      const raw = document.getElementById('tle-input').value.trim();
+      if (!raw) return alert('Paste a TLE first');
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      let line1, line2;
+      if (lines.length >= 3 && lines[1].startsWith('1 ')) {
+        line1 = lines[1]; line2 = lines[2];
+      } else if (lines.length >= 2) {
+        line1 = lines[0]; line2 = lines[1];
+      } else return alert('Need at least two TLE lines');
+      const norad = line1.substring(2, 7).trim();
+      const name = prompt('Name for this satellite (optional):') || `NORAD ${norad}`;
+      const list = getWatchlist();
+      list.push({ name, norad, tle_line1: line1, tle_line2: line2 });
+      saveWatchlist(list);
+      renderWatchlist();
+      alert('Added to watchlist');
+    }
+
+    function removeFromWatchlist(idx) {
+      const list = getWatchlist();
+      list.splice(idx, 1);
+      saveWatchlist(list);
+      renderWatchlist();
+    }
+
+    function calcFromSaved(idx) {
+      const s = getWatchlist()[idx];
+      if (!s) return;
+      const satrec = satellite.twoline2satrec(s.tle_line1, s.tle_line2);
+      showPosition(document.getElementById('pos-saved-' + idx), satrec, s.name);
+    }
+
+    async function loadData() {
+      try {
+        const notesRes = await fetch('AUTO_NOTES.txt');
+        const notesText = await notesRes.text();
+        document.getElementById('notes').innerHTML = formatNotes(notesText);
+
+        const csvRes = await fetch('MASTER_ALL_SPACE_OBJECTS.csv');
+        const csvText = await csvRes.text();
+        allObjects = parseCSV(csvText);
+        renderStats();
+        renderMajorMovements();
+        loadConstellations();
+        renderTable(allObjects);
+        checkHighlights();
+      } catch (e) {
+        document.getElementById('notes').textContent = 'Failed to load data.';
+        document.getElementById('major-movements').textContent = 'Failed to load major movements.';
+        console.error(e);
+      }
+    }
+
+    loadData();
+    renderWatchlist();
   </script>
 </body>
 </html>
