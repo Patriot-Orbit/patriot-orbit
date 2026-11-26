@@ -9,28 +9,27 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #000 url('background.jpg') center/cover no-repeat fixed;
+      background: #0a0e17 url('background.jpg') center/cover no-repeat fixed;
       color: #e8eef7;
       min-height: 100vh;
-      transition: background 0.3s;
     }
     body.light {
-      background: #f4f6f9 url('background.jpg') center/cover no-repeat fixed;
-      color: #1f2937;
+      background: #f8fafc url('background.jpg') center/cover no-repeat fixed;
+      color: #1e2937;
     }
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: rgba(0, 5, 15, 0.55);
+      background: rgba(0, 5, 15, 0.62);
       z-index: -1;
     }
     body.light::before {
-      background: rgba(255, 255, 255, 0.75);
+      background: rgba(248, 250, 252, 0.82);
     }
     header {
       text-align: center;
-      padding: 40px 20px 20px;
+      padding: 40px 20px 16px;
       position: relative;
     }
     header img {
@@ -40,19 +39,26 @@
       filter: drop-shadow(0 8px 24px rgba(0,0,0,0.7));
     }
     .tagline {
-      margin-top: 12px;
+      margin-top: 10px;
       font-size: 14px;
       letter-spacing: 1.5px;
       text-transform: uppercase;
       color: #c0c8d4;
       font-weight: 500;
     }
+    body.light .tagline { color: #475569; }
+    .last-updated {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+    body.light .last-updated { color: #64748b; }
     .dark-toggle {
       position: absolute;
       top: 20px;
       right: 20px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
       color: #fff;
       padding: 6px 12px;
       border-radius: 6px;
@@ -60,8 +66,9 @@
       font-size: 13px;
     }
     body.light .dark-toggle {
-      background: rgba(0,0,0,0.1);
-      color: #1f2937;
+      background: rgba(255,255,255,0.9);
+      border-color: #cbd5e1;
+      color: #1e2937;
     }
     main {
       max-width: 1100px;
@@ -74,7 +81,7 @@
       margin: 36px 0 14px;
       color: #fff;
     }
-    body.light h2 { color: #111827; }
+    body.light h2 { color: #0f172a; }
     .stats {
       display: flex;
       gap: 16px;
@@ -82,16 +89,18 @@
       margin-bottom: 24px;
     }
     .stat {
-      background: rgba(10, 15, 25, 0.75);
+      background: rgba(10, 15, 25, 0.78);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 12px;
       padding: 16px 20px;
       min-width: 140px;
+      flex: 1 1 140px;
       backdrop-filter: blur(6px);
     }
     body.light .stat {
-      background: rgba(255,255,255,0.9);
-      border-color: #e5e7eb;
+      background: rgba(255,255,255,0.95);
+      border-color: #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .stat .num {
       font-size: 24px;
@@ -104,26 +113,29 @@
       color: #9ca3af;
       margin-top: 2px;
     }
+    body.light .stat .label { color: #64748b; }
     .notes, .major-movements, .position-card {
-      background: rgba(10, 15, 25, 0.75);
+      background: rgba(10, 15, 25, 0.78);
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
       padding: 24px;
       backdrop-filter: blur(6px);
       font-size: 15.5px;
       line-height: 1.7;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.45);
     }
     body.light .notes, body.light .major-movements, body.light .position-card {
-      background: rgba(255,255,255,0.92);
-      border-color: #e5e7eb;
-      color: #1f2937;
+      background: rgba(255,255,255,0.96);
+      border-color: #e2e8f0;
+      color: #1e2937;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
     .notes .update-time {
       font-size: 13px;
       color: #9ca3af;
       margin-bottom: 16px;
     }
+    body.light .notes .update-time { color: #64748b; }
     .notes .section { margin-bottom: 16px; }
     .notes .section-title { font-weight: 600; margin-bottom: 4px; }
     .notes .section ul { margin-left: 20px; margin-top: 4px; }
@@ -134,7 +146,7 @@
       border-top: 1px solid rgba(255,255,255,0.1);
       font-weight: 600;
     }
-    body.light .notes .total { border-top-color: #e5e7eb; }
+    body.light .notes .total { border-top-color: #e2e8f0; }
     .controls {
       display: flex;
       gap: 12px;
@@ -151,8 +163,8 @@
     }
     body.light .controls input, body.light .controls select, body.light .position-card input, body.light .position-card textarea, body.light .position-card button {
       background: #fff;
-      border-color: #d1d5db;
-      color: #1f2937;
+      border-color: #cbd5e1;
+      color: #1e2937;
     }
     .position-card textarea {
       width: 100%;
@@ -177,17 +189,17 @@
       border-radius: 6px;
       font-size: 13px;
     }
-    body.light .pos-result { background: #f3f4f6; }
+    body.light .pos-result { background: #f1f5f9; }
     table {
       width: 100%;
       border-collapse: collapse;
-      background: rgba(10, 15, 25, 0.75);
+      background: rgba(10, 15, 25, 0.78);
       border-radius: 12px;
       overflow: hidden;
       font-size: 14px;
     }
     body.light table {
-      background: rgba(255,255,255,0.92);
+      background: rgba(255,255,255,0.96);
     }
     th, td {
       padding: 10px 12px;
@@ -195,15 +207,23 @@
       border-bottom: 1px solid rgba(255,255,255,0.08);
     }
     body.light th, body.light td {
-      border-bottom-color: #e5e7eb;
+      border-bottom-color: #e2e8f0;
     }
     th {
       background: rgba(0,0,0,0.3);
       font-weight: 600;
     }
-    body.light th { background: #f3f4f6; }
+    body.light th { background: #f1f5f9; color: #0f172a; }
     tr:hover { background: rgba(255,255,255,0.05); }
-    body.light tr:hover { background: #f9fafb; }
+    body.light tr:hover { background: #f8fafc; }
+    .country-PRC { color: #f87171; font-weight: 600; }
+    .country-CIS { color: #60a5fa; font-weight: 600; }
+    .country-NKOR { color: #fbbf24; font-weight: 600; }
+    .country-IRAN { color: #34d399; font-weight: 600; }
+    body.light .country-PRC { color: #dc2626; }
+    body.light .country-CIS { color: #2563eb; }
+    body.light .country-NKOR { color: #d97706; }
+    body.light .country-IRAN { color: #059669; }
     .about {
       background: rgba(10, 15, 25, 0.65);
       border: 1px solid rgba(255,255,255,0.1);
@@ -215,9 +235,9 @@
       color: #d1d5db;
     }
     body.light .about {
-      background: rgba(255,255,255,0.9);
-      color: #374151;
-      border-color: #e5e7eb;
+      background: rgba(255,255,255,0.95);
+      color: #334155;
+      border-color: #e2e8f0;
     }
     .download {
       display: inline-block;
@@ -232,10 +252,28 @@
     }
     footer {
       text-align: center;
-      padding: 30px;
+      padding: 30px 20px;
       font-size: 13px;
       color: #9ca3af;
     }
+    body.light footer { color: #64748b; }
+    .socials {
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      margin: 0 0 12px;
+    }
+    .socials a {
+      color: #9ca3af;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+    .socials a:hover { color: #fff; }
+    body.light .socials a { color: #64748b; }
+    body.light .socials a:hover { color: #1e40af; }
     .highlight {
       background: rgba(185, 28, 28, 0.15);
       border-left: 3px solid #b91c1c;
@@ -246,7 +284,7 @@
     }
     .alerts {
       text-align: center;
-      margin: 10px 0 30px;
+      margin: 10px 0 12px;
     }
     .alerts a {
       display: inline-block;
@@ -259,12 +297,17 @@
       letter-spacing: 0.5px;
       font-size: 16px;
     }
-    .major-list {
-      margin-top: 12px;
+    .signup-note {
+      text-align: center;
+      font-size: 13.5px;
+      color: #9ca3af;
+      margin-bottom: 28px;
     }
-    .major-list li {
-      margin: 6px 0;
-    }
+    body.light .signup-note { color: #64748b; }
+    .signup-note a { color: #60a5fa; text-decoration: none; }
+    body.light .signup-note a { color: #2563eb; }
+    .major-list { margin-top: 12px; }
+    .major-list li { margin: 6px 0; }
     .watchlist-item {
       margin: 8px 0;
       padding: 8px 10px;
@@ -276,7 +319,13 @@
       flex-wrap: wrap;
       gap: 8px;
     }
-    body.light .watchlist-item { background: #f3f4f6; }
+    body.light .watchlist-item { background: #f1f5f9; }
+    @media (max-width: 640px) {
+      .stats { flex-direction: column; }
+      .stat { min-width: 0; }
+      header img { width: 220px; }
+      .dark-toggle { position: static; margin-bottom: 12px; }
+    }
   </style>
 </head>
 <body>
@@ -284,11 +333,17 @@
     <button class="dark-toggle" onclick="toggleDark()">Dark / Light</button>
     <img src="logo.png" alt="Patriot Orbit">
     <div class="tagline">Adversary Space Activity Intelligence</div>
+    <div class="last-updated" id="last-updated">Loading last update…</div>
   </header>
 
   <main>
     <div class="alerts">
       <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Get Alerts</a>
+    </div>
+    <div class="signup-note">
+      Free updates: <a href="https://patriotorbit.substack.com" target="_blank" rel="noopener">Substack</a> · 
+      Follow on <a href="https://x.com/ledgerpatriotoc" target="_blank" rel="noopener">X</a> and 
+      <a href="https://www.reddit.com/r/PatriotOrbit" target="_blank" rel="noopener">Reddit</a>
     </div>
 
     <h2>Position Calculator</h2>
@@ -354,6 +409,11 @@
   </main>
 
   <footer>
+    <div class="socials">
+      <a href="https://x.com/patriotorbit" target="_blank" rel="noopener">X</a>
+      <a href="https://www.reddit.com/r/PatriotOrbit" target="_blank" rel="noopener">Reddit</a>
+      <a href="https://patriotorbit.substack.com" target="_blank" rel="noopener">Substack</a>
+    </div>
     Patriot Orbit · Open Source Space Domain Awareness
   </footer>
 
@@ -374,6 +434,10 @@
         if (!line) return;
         if (line.startsWith('Patriot Orbit Update')) {
           html += `<div class="update-time">${line}</div>`;
+          const timeMatch = line.match(/—\s*(.+)/);
+          if (timeMatch) {
+            document.getElementById('last-updated').textContent = 'Last updated: ' + timeMatch[1].trim();
+          }
         } else if (line.includes('Significant Orbital Changes') || line.includes('No significant orbital changes')) {
           if (currentSection) html += '</ul></div>';
           currentSection = '';
@@ -413,15 +477,21 @@
 
     function renderStats() {
       const total = allObjects.length;
-      const fresh = allObjects.filter(o => {
+      const fresh3 = allObjects.filter(o => {
         if (!o.EPOCH) return false;
         const epoch = new Date(o.EPOCH);
         return !isNaN(epoch) && (Date.now() - epoch) < 3 * 24 * 60 * 60 * 1000;
       }).length;
+      const fresh6h = allObjects.filter(o => {
+        if (!o.EPOCH) return false;
+        const epoch = new Date(o.EPOCH);
+        return !isNaN(epoch) && (Date.now() - epoch) < 6 * 60 * 60 * 1000;
+      }).length;
       const countries = new Set(allObjects.map(o => o.COUNTRY_CODE).filter(Boolean)).size;
       document.getElementById('stats').innerHTML = `
         <div class="stat"><div class="num">${total.toLocaleString()}</div><div class="label">Total Objects</div></div>
-        <div class="stat"><div class="num">${fresh.toLocaleString()}</div><div class="label">Fresh Epochs (3 days)</div></div>
+        <div class="stat"><div class="num">${fresh6h.toLocaleString()}</div><div class="label">Updated last 6 hours</div></div>
+        <div class="stat"><div class="num">${fresh3.toLocaleString()}</div><div class="label">Fresh Epochs (3 days)</div></div>
         <div class="stat"><div class="num">${countries}</div><div class="label">Countries</div></div>
       `;
     }
@@ -457,7 +527,7 @@
         <tr>
           <td>${o.OBJECT_NAME || ''}</td>
           <td>${o.NORAD_CAT_ID || ''}</td>
-          <td>${o.COUNTRY_CODE || ''}</td>
+          <td class="country-${o.COUNTRY_CODE || ''}">${o.COUNTRY_CODE || ''}</td>
           <td>${o.CONSTELLATION || ''}</td>
           <td>${(o.EPOCH || '').slice(0, 16)}</td>
           <td>${o.INCLINATION || ''}</td>
