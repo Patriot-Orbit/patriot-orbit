@@ -1,20 +1,29 @@
-Patriot Orbit Update — 2026-11-26 15:15 UTC
+Patriot Orbit Update — 2026-11-26 16:22 UTC
 
-No significant orbital changes detected this run.
+Significant Orbital Changes Detected:
+- YAOGAN-36 02C (NORAD 54045): Mean motion 15.6637 → 15.6648
+- YAOGAN-43 02A (NORAD 60945): Mean motion 15.7215 → 15.7227
+- JILIN-01 GAOFEN 3F (NORAD 46458): Mean motion 15.9304 → 15.9315
+- JILIN-01 GAOFEN 3F (NORAD 46458): Mean motion 15.9304 → 15.9315
+- JILIN-01 GAOFEN 3F (NORAD 46458): Mean motion 15.9304 → 15.9315
+- JILIN-01 GAOFEN 3F (NORAD 46458): Mean motion 15.9304 → 15.9315
+- COSMOS 1743 (NORAD 16719): Mean motion 15.9077 → 15.9088
+- COSMOS 2251 DEB (NORAD 47119): Mean motion 14.6736 → 14.6747
+- COSMOS 1408 DEB (NORAD 50621): Mean motion 15.8604 → 15.8621
 
-Chinese Activity: 2614 objects tracked.
+Chinese Activity: 2619 objects tracked.
 - Yaogan: 256 objects (includes known debris and triplets).
 - BEIDOU: 56 objects
-- FENGYUN: 1944 objects
+- FENGYUN: 1949 objects
 - GAOFEN: 45 objects
 - HAIYANG: 10 objects
 - JILIN: 23 objects
 - QIANFAN: 266 objects
 - TIANHUI: 14 objects
 
-Russian Activity: 2960 objects tracked.
+Russian Activity: 2961 objects tracked.
 - Includes GLONASS navigation and COSMOS reconnaissance satellites.
-- COSMOS: 2806 objects
+- COSMOS: 2807 objects
 - GLONASS: 140 objects
 - KANOPUS: 5 objects
 - RESURS: 9 objects
@@ -25,21 +34,21 @@ North Korean Activity: 1 objects tracked.
 Iranian Activity: 3 objects tracked.
 - Includes Noor military satellites and related objects.
 
-Total objects in master file: 5578
+Total objects in master file: 5584
 
 Pull statistics:
   YAOGAN             256 objects  (Space-Track, 0.4s)
   BEIDOU              56 objects  (Space-Track, 0.3s)
   GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.4s)
-  FENGYUN           1944 objects  (Space-Track, 0.5s)
-  HAIYANG             10 objects  (Space-Track, 0.3s)
-  JILIN               23 objects  (Space-Track, 0.3s)
-  TIANHUI             14 objects  (Space-Track, 0.4s)
-  GLONASS            140 objects  (Space-Track, 0.4s)
-  COSMOS            2806 objects  (Space-Track, 0.5s)
-  KANOPUS              5 objects  (Space-Track, 0.4s)
+  FENGYUN           1949 objects  (Space-Track, 0.6s)
+  HAIYANG             10 objects  (Space-Track, 0.4s)
+  JILIN               23 objects  (Space-Track, 0.4s)
+  TIANHUI             14 objects  (Space-Track, 0.3s)
+  GLONASS            140 objects  (Space-Track, 0.3s)
+  COSMOS            2807 objects  (Space-Track, 0.5s)
+  KANOPUS              5 objects  (Space-Track, 0.3s)
   RESURS               9 objects  (Space-Track, 0.4s)
-  MALLIGYONG           1 objects  (Space-Track, 0.4s)
+  MALLIGYONG           1 objects  (Space-Track, 0.3s)
   KHAYYAM              1 objects  (Space-Track, 0.4s)
   SAFIR                2 objects  (Space-Track, 0.4s)
