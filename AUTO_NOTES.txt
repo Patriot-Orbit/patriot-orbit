@@ -1,4 +1,4 @@
-Patriot Orbit Update — 2026-11-26 22:06 UTC
+Patriot Orbit Update — 2026-11-26 23:09 UTC
 
 No significant orbital changes detected this run.
 
@@ -12,9 +12,9 @@ Chinese Activity: 2618 objects tracked.
 - QIANFAN: 266 objects
 - TIANHUI: 14 objects
 
-Russian Activity: 2960 objects tracked.
+Russian Activity: 2958 objects tracked.
 - Includes GLONASS navigation and COSMOS reconnaissance satellites.
-- COSMOS: 2806 objects
+- COSMOS: 2804 objects
 - GLONASS: 140 objects
 - KANOPUS: 5 objects
 - RESURS: 9 objects
@@ -25,21 +25,21 @@ North Korean Activity: 1 objects tracked.
 Iranian Activity: 3 objects tracked.
 - Includes Noor military satellites and related objects.
 
-Total objects in master file: 5582
+Total objects in master file: 5580
 
 Pull statistics:
-  YAOGAN             256 objects  (Space-Track, 0.4s)
+  YAOGAN             256 objects  (Space-Track, 0.3s)
   BEIDOU              56 objects  (Space-Track, 0.3s)
-  GAOFEN              45 objects  (Space-Track, 0.4s)
+  GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.3s)
   FENGYUN           1948 objects  (Space-Track, 0.4s)
   HAIYANG             10 objects  (Space-Track, 0.3s)
-  JILIN               23 objects  (Space-Track, 0.3s)
+  JILIN               23 objects  (Space-Track, 0.4s)
   TIANHUI             14 objects  (Space-Track, 0.3s)
   GLONASS            140 objects  (Space-Track, 0.3s)
-  COSMOS            2806 objects  (Space-Track, 0.4s)
+  COSMOS            2804 objects  (Space-Track, 0.4s)
   KANOPUS              5 objects  (Space-Track, 0.3s)
   RESURS               9 objects  (Space-Track, 0.3s)
   MALLIGYONG           1 objects  (Space-Track, 0.3s)
   KHAYYAM              1 objects  (Space-Track, 0.3s)
-  SAFIR                2 objects  (Space-Track, 0.4s)
+  SAFIR                2 objects  (Space-Track, 0.3s)
