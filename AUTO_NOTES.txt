@@ -1,11 +1,11 @@
-Patriot Orbit Update — 2026-11-26 20:16 UTC
+Patriot Orbit Update — 2026-11-26 21:11 UTC
 
 No significant orbital changes detected this run.
 
-Chinese Activity: 2620 objects tracked.
+Chinese Activity: 2619 objects tracked.
 - Yaogan: 256 objects (includes known debris and triplets).
 - BEIDOU: 56 objects
-- FENGYUN: 1950 objects
+- FENGYUN: 1949 objects
 - GAOFEN: 45 objects
 - HAIYANG: 10 objects
 - JILIN: 23 objects
@@ -25,14 +25,14 @@ North Korean Activity: 1 objects tracked.
 Iranian Activity: 3 objects tracked.
 - Includes Noor military satellites and related objects.
 
-Total objects in master file: 5585
+Total objects in master file: 5584
 
 Pull statistics:
   YAOGAN             256 objects  (Space-Track, 0.3s)
   BEIDOU              56 objects  (Space-Track, 0.3s)
   GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.3s)
-  FENGYUN           1950 objects  (Space-Track, 0.4s)
+  FENGYUN           1949 objects  (Space-Track, 0.4s)
   HAIYANG             10 objects  (Space-Track, 0.3s)
   JILIN               23 objects  (Space-Track, 0.3s)
   TIANHUI             14 objects  (Space-Track, 0.3s)
