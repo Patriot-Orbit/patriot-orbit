@@ -1,7 +1,6 @@
-Patriot Orbit Update — 2026-11-26 12:13 UTC
+Patriot Orbit Update — 2026-11-26 13:36 UTC
 
-Significant Orbital Changes Detected:
-- YAOGAN-43 O1E (NORAD 60462): Mean motion 15.2321 → 15.2284
+No significant orbital changes detected this run.
 
 Chinese Activity: 2614 objects tracked.
 - Yaogan: 256 objects (includes known debris and triplets).
@@ -13,9 +12,9 @@ Chinese Activity: 2614 objects tracked.
 - QIANFAN: 266 objects
 - TIANHUI: 14 objects
 
-Russian Activity: 2961 objects tracked.
+Russian Activity: 2960 objects tracked.
 - Includes GLONASS navigation and COSMOS reconnaissance satellites.
-- COSMOS: 2807 objects
+- COSMOS: 2806 objects
 - GLONASS: 140 objects
 - KANOPUS: 5 objects
 - RESURS: 9 objects
@@ -26,21 +25,21 @@ North Korean Activity: 1 objects tracked.
 Iranian Activity: 3 objects tracked.
 - Includes Noor military satellites and related objects.
 
-Total objects in master file: 5579
+Total objects in master file: 5578
 
 Pull statistics:
   YAOGAN             256 objects  (Space-Track, 0.4s)
-  BEIDOU              56 objects  (Space-Track, 0.4s)
-  GAOFEN              45 objects  (Space-Track, 0.4s)
+  BEIDOU              56 objects  (Space-Track, 0.3s)
+  GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.4s)
-  FENGYUN           1944 objects  (Space-Track, 0.5s)
-  HAIYANG             10 objects  (Space-Track, 0.3s)
+  FENGYUN           1944 objects  (Space-Track, 0.4s)
+  HAIYANG             10 objects  (Space-Track, 0.5s)
   JILIN               23 objects  (Space-Track, 0.3s)
   TIANHUI             14 objects  (Space-Track, 0.3s)
-  GLONASS            140 objects  (Space-Track, 0.4s)
-  COSMOS            2807 objects  (Space-Track, 0.5s)
-  KANOPUS              5 objects  (Space-Track, 0.4s)
+  GLONASS            140 objects  (Space-Track, 0.3s)
+  COSMOS            2806 objects  (Space-Track, 0.5s)
+  KANOPUS              5 objects  (Space-Track, 0.3s)
   RESURS               9 objects  (Space-Track, 0.3s)
   MALLIGYONG           1 objects  (Space-Track, 0.3s)
-  KHAYYAM              1 objects  (Space-Track, 0.4s)
+  KHAYYAM              1 objects  (Space-Track, 0.3s)
   SAFIR                2 objects  (Space-Track, 0.3s)
