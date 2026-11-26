@@ -338,9 +338,10 @@
 
   <main>
     <div class="alerts">
-      <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Get Alerts</a>
+      <a href="https://buy.stripe.com/8x2bIU0O73yJdtD60n2B200" target="_blank">$15/month — Activity Alerts</a>
     </div>
     <div class="signup-note">
+      Email alerts for notable orbital changes and fresh epochs on tracked adversary constellations (public TLE data).<br>
       Free updates: <a href="https://patriotorbit.substack.com" target="_blank" rel="noopener">Substack</a> · 
       Follow on <a href="https://x.com/ledgerpatriotoc" target="_blank" rel="noopener">X</a> and 
       <a href="https://www.reddit.com/r/PatriotOrbit" target="_blank" rel="noopener">Reddit</a>
@@ -358,6 +359,9 @@
         <button onclick="addToWatchlist()" style="background:#238636;">Add to Watchlist</button>
       </div>
       <div id="paste-result" class="pos-result" style="display:none;"></div>
+      <div style="margin-top:12px; font-size:13px; color:#9ca3af;">
+        Note: Public TLE propagation. No covariance provided. Uncertainty is typically kilometer-scale.
+      </div>
     </div>
 
     <div class="stats" id="stats"></div>
@@ -405,6 +409,8 @@
     <h2>About</h2>
     <div class="about">
       Patriot Orbit is an open-source space domain awareness project that automatically tracks and summarizes public TLE data on adversary satellite activity. It updates regularly with notes on Chinese, Russian, North Korean, and Iranian objects, including debris, fresh epochs, and constellation activity.
+      <br><br>
+      Positions are derived from public TLEs (Space-Track and CelesTrak) and do not include covariance. Typical position uncertainty is kilometer-scale and grows with time since epoch. Alerts and notes are for activity awareness, not operational SSA or collision avoidance.
     </div>
   </main>
 
@@ -693,21 +699,4 @@
 
         const csvRes = await fetch('MASTER_ALL_SPACE_OBJECTS.csv');
         const csvText = await csvRes.text();
-        allObjects = parseCSV(csvText);
-        renderStats();
-        renderMajorMovements();
-        loadConstellations();
-        renderTable(allObjects);
-        checkHighlights();
-      } catch (e) {
-        document.getElementById('notes').textContent = 'Failed to load data.';
-        document.getElementById('major-movements').textContent = 'Failed to load major movements.';
-        console.error(e);
-      }
-    }
-
-    loadData();
-    renderWatchlist();
-  </script>
-</body>
-</html>
+        allObjects 
