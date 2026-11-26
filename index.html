@@ -1,381 +1,232 @@
-#!/usr/bin/env python3
-"""
-Patriot Orbit — Full Automated Space Domain Awareness Updater
-Pulls public GP/TLE data for adversary constellations (PRC, CIS, NKOR, IRAN),
-detects significant orbital changes, generates detailed AUTO_NOTES.txt,
-and maintains MASTER_ALL_SPACE_OBJECTS.csv + previous_snapshot.csv.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Patriot Orbit — Space Domain Awareness</title>
+  <style>
+    :root {
+      --bg: #0a0e17;
+      --card: #111827;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #3b82f6;
+      --green: #10b981;
+      --red: #ef4444;
+      --yellow: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 2rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+    }
+    header h1 { margin: 0; font-size: 1.8rem; letter-spacing: -0.02em; }
+    header p { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.95rem; }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem;
+    }
+    .card h2 {
+      margin: 0 0 0.75rem;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .card h2::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    #notes, #movements {
+      white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.85rem;
+      line-height: 1.55;
+      color: var(--text);
+    }
+    #movements ul { margin: 0; padding-left: 1.2rem; }
+    #movements li { margin-bottom: 0.35rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.45rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+    }
+    th { color: var(--muted); font-weight: 500; }
+    tr:hover td { background: rgba(59, 130, 246, 0.06); }
+    .country-PRC { color: #f87171; }
+    .country-CIS { color: #60a5fa; }
+    .country-NKOR { color: #fbbf24; }
+    .country-IRAN { color: #34d399; }
+    .status {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Patriot Orbit</h1>
+    <p>Open-source space domain awareness · Public TLE/GP data</p>
+  </header>
 
-Primary source: Space-Track.org (with credentials)
-Fallback: CelesTrak public GP endpoints
+  <main>
+    <div class="grid">
+      <div class="card">
+        <h2>Latest Update</h2>
+        <div id="notes">Loading notes…</div>
+      </div>
+      <div class="card">
+        <h2>Major Movements</h2>
+        <div id="movements">Loading…</div>
+      </div>
+    </div>
 
-Designed to run on a schedule via GitHub Actions.
-"""
+    <div class="card" style="margin-top: 1.25rem;">
+      <h2>Tracked Objects</h2>
+      <div style="overflow-x: auto;">
+        <table id="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>NORAD</th>
+              <th>Constellation</th>
+              <th>Country</th>
+              <th>Inclination</th>
+              <th>Mean Motion</th>
+              <th>Epoch</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="7">Loading data…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="status" id="status"></div>
+    </div>
+  </main>
 
-import os
-import sys
-import time
-import json
-import requests
-import pandas as pd
-from datetime import datetime
-from spacetrack import SpaceTrackClient
+  <footer>
+    Data sourced from Space-Track.org (preferred) with CelesTrak public fallback.<br>
+    Updates run on a schedule. Last refresh shown in the notes above.
+  </footer>
 
-# =============================================================================
-# CONFIGURATION
-# =============================================================================
-IDENTITY = os.getenv('SPACETRACK_USER', 'bradenrbailey02@gmail.com')
-PASSWORD = os.getenv('SPACETRACK_PASS', 'Uscuscusc9777!!!')
+  <script>
+    async function loadNotes() {
+      try {
+        const res = await fetch('AUTO_NOTES.txt?' + Date.now());
+        if (!res.ok) throw new Error();
+        const text = await res.text();
+        document.getElementById('notes').textContent = text.trim() || 'No notes available.';
+      } catch {
+        document.getElementById('notes').textContent = 'Notes not available yet.';
+      }
+    }
 
-CELESTRAK_HEADERS = {
-    'User-Agent': 'PatriotOrbit/1.0 (public TLE/GP fallback; +https://patriotorbit.com)'
-}
+    async function loadMovements() {
+      try {
+        const res = await fetch('major_movements_snippet.html?' + Date.now());
+        if (!res.ok) throw new Error();
+        const html = await res.text();
+        document.getElementById('movements').innerHTML = html.trim() || '<p>No major movements detected.</p>';
+      } catch {
+        document.getElementById('movements').innerHTML = '<p>No major movements detected this run.</p>';
+      }
+    }
 
-CONSTELLATIONS = [
-    '~~YAOGAN~~', '~~BEIDOU~~', '~~GAOFEN~~', '~~QIANFAN~~',
-    '~~FENGYUN~~', '~~HAIYANG~~', '~~JILIN~~', '~~TIANHUI~~',
-    '~~GLONASS~~', '~~COSMOS~~', '~~KANOPUS~~', '~~RESURS~~',
-    '~~KWANGMYONGSONG~~', '~~MALLIGYONG~~',
-    '~~NOOR~~', '~~KHAYYAM~~', '~~SAFIR~~'
-]
-
-WATCHLIST_NORADS = [
-    # Add specific NORAD IDs here if desired
-    # '25544',
-    # '63230',
-]
-
-COUNTRY_MAP = {
-    'YAOGAN': 'PRC', 'BEIDOU': 'PRC', 'GAOFEN': 'PRC', 'QIANFAN': 'PRC',
-    'FENGYUN': 'PRC', 'HAIYANG': 'PRC', 'JILIN': 'PRC', 'TIANHUI': 'PRC',
-    'GLONASS': 'CIS', 'COSMOS': 'CIS', 'KANOPUS': 'CIS', 'RESURS': 'CIS',
-    'KWANGMYONGSONG': 'NKOR', 'MALLIGYONG': 'NKOR',
-    'NOOR': 'IRAN', 'KHAYYAM': 'IRAN', 'SAFIR': 'IRAN'
-}
-
-ALLOWED_COUNTRIES = {'PRC', 'CIS', 'NKOR', 'IRAN'}
-
-PREV_SNAPSHOT = 'previous_snapshot.csv'
-MASTER_CSV = 'MASTER_ALL_SPACE_OBJECTS.csv'
-NOTES_FILE = 'AUTO_NOTES.txt'
-WATCHLIST_JSON = 'watchlist_tles.json'
-HTML_SNIPPET = 'major_movements_snippet.html'
-
-INCLINATION_THRESHOLD = 0.05
-MEAN_MOTION_THRESHOLD = 0.001
-
-# =============================================================================
-# UTILITIES
-# =============================================================================
-def rate_limit_sleep(seconds=3.0):
-    """Respect rate limits on both Space-Track and CelesTrak."""
-    time.sleep(seconds)
-
-def safe_numeric(df: pd.DataFrame, columns: list) -> pd.DataFrame:
-    """Convert listed columns to numeric where they exist."""
-    for col in columns:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
-    return df
-
-def log(msg: str):
-    """Simple timestamped log line."""
-    ts = datetime.utcnow().strftime('%H:%M:%S')
-    print(f"[{ts}] {msg}")
-
-# =============================================================================
-# DATA FETCHERS
-# =============================================================================
-def fetch_celestrak_json(name: str) -> list:
-    """Fetch GP JSON from CelesTrak for a constellation name (without ~~)."""
-    clean = name.replace('~~', '')
-    url = 'https://celestrak.org/NORAD/elements/gp.php'
-    params = {'NAME': clean, 'FORMAT': 'json'}
-    try:
-        r = requests.get(url, params=params, headers=CELESTRAK_HEADERS, timeout=60)
-        r.raise_for_status()
-        data = r.json()
-        if isinstance(data, list):
-            return data
-        return []
-    except Exception as e:
-        log(f"CelesTrak JSON failed for {clean}: {e}")
-        return []
-
-def fetch_celestrak_tle_by_norad(norad: str) -> tuple:
-    """Return (name, line1, line2) or (None, None, None)."""
-    url = 'https://celestrak.org/NORAD/elements/gp.php'
-    try:
-        r = requests.get(url, params={'CATNR': norad, 'FORMAT': 'tle'},
-                         headers=CELESTRAK_HEADERS, timeout=30)
-        r.raise_for_status()
-        lines = [ln.strip() for ln in r.text.splitlines() if ln.strip()]
-        if len(lines) >= 3 and lines[1].startswith('1 ') and lines[2].startswith('2 '):
-            return lines[0], lines[1], lines[2]
-    except Exception as e:
-        log(f"CelesTrak TLE failed for NORAD {norad}: {e}")
-    return None, None, None
-
-# =============================================================================
-# LOAD PREVIOUS SNAPSHOT
-# =============================================================================
-def load_previous_snapshot() -> pd.DataFrame | None:
-    if not os.path.exists(PREV_SNAPSHOT):
-        log("No previous snapshot found.")
-        return None
-    try:
-        df = pd.read_csv(PREV_SNAPSHOT)
-        if 'NORAD_CAT_ID' in df.columns:
-            df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
-        df = safe_numeric(df, ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS'])
-        log(f"Loaded previous snapshot: {len(df)} objects")
-        return df
-    except Exception as e:
-        log(f"Failed to load previous snapshot: {e}")
-        return None
-
-previous = load_previous_snapshot()
-
-# =============================================================================
-# MAIN DATA PULL
-# =============================================================================
-all_dfs = []
-watchlist_data = []
-pull_stats = []
-
-log("Starting hourly-compliant pull...")
-
-# Initialize Space-Track client (or fall back)
-st = None
-try:
-    st = SpaceTrackClient(IDENTITY, PASSWORD)
-    # Quick health check
-    _ = st.gp(norad_cat_id='25544', format='json')
-    log("Space-Track connection successful")
-except Exception as e:
-    log(f"Space-Track unavailable ({e}). Falling back to CelesTrak for this run.")
-    st = None
-
-for raw_name in CONSTELLATIONS:
-    clean_name = raw_name.replace('~~', '')
-    df = None
-    source = None
-    start = time.time()
-
-    # Prefer Space-Track
-    if st is not None:
-        try:
-            data = st.gp(
-                object_name=raw_name,
-                format='json',
-                epoch='%3Enow-10',
-                decay_date='null-val'
-            )
-            sats = json.loads(data)
-            if sats:
-                df = pd.DataFrame(sats)
-                source = 'Space-Track'
-        except Exception as e:
-            log(f"Space-Track error on {clean_name}: {e}")
-
-    # CelesTrak fallback
-    if df is None or df.empty:
-        sats = fetch_celestrak_json(raw_name)
-        if sats:
-            df = pd.DataFrame(sats)
-            source = 'CelesTrak'
-        rate_limit_sleep(2.5)
-
-    if df is not None and not df.empty:
-        df['CONSTELLATION'] = clean_name
-        df['COUNTRY_CODE'] = COUNTRY_MAP.get(clean_name, 'UNK')
-        df = df[df['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)]
-        if not df.empty:
-            if 'NORAD_CAT_ID' in df.columns:
-                df['NORAD_CAT_ID'] = df['NORAD_CAT_ID'].astype(str)
-            all_dfs.append(df)
-            elapsed = time.time() - start
-            pull_stats.append((clean_name, len(df), source, elapsed))
-            log(f"Pulled {len(df):>5}  {clean_name:<16}  via {source:<12}  ({elapsed:.1f}s)")
-
-    rate_limit_sleep(1.5)
-
-# =============================================================================
-# WATCHLIST (optional specific NORADs)
-# =============================================================================
-if WATCHLIST_NORADS:
-    log("Processing watchlist...")
-    for norad in WATCHLIST_NORADS:
-        entry = {
-            'norad': norad,
-            'name': '',
-            'tle_line1': '',
-            'tle_line2': '',
-            'epoch': '',
-            'inclination': ''
+    async function loadTable() {
+      const tbody = document.getElementById('tbody');
+      const status = document.getElementById('status');
+      try {
+        const res = await fetch('MASTER_ALL_SPACE_OBJECTS.csv?' + Date.now());
+        if (!res.ok) throw new Error();
+        const text = await res.text();
+        const lines = text.trim().split('\n');
+        if (lines.length < 2) {
+          tbody.innerHTML = '<tr><td colspan="7">No data yet.</td></tr>';
+          return;
         }
-        success = False
-        if st is not None:
-            try:
-                data = st.gp(norad_cat_id=norad, format='json',
-                              epoch='%3Enow-10', decay_date='null-val')
-                sats = json.loads(data)
-                if sats:
-                    s = sats[0]
-                    entry.update({
-                        'name': s.get('OBJECT_NAME', ''),
-                        'tle_line1': s.get('TLE_LINE1', ''),
-                        'tle_line2': s.get('TLE_LINE2', ''),
-                        'epoch': s.get('EPOCH', ''),
-                        'inclination': str(s.get('INCLINATION', '')),
-                    })
-                    success = True
-            except Exception as e:
-                log(f"Watchlist Space-Track failed for {norad}: {e}")
+        const headers = lines[0].split(',');
+        const nameIdx = headers.indexOf('OBJECT_NAME');
+        const noradIdx = headers.indexOf('NORAD_CAT_ID');
+        const constIdx = headers.indexOf('CONSTELLATION');
+        const countryIdx = headers.indexOf('COUNTRY_CODE');
+        const incIdx = headers.indexOf('INCLINATION');
+        const mmIdx = headers.indexOf('MEAN_MOTION');
+        const epochIdx = headers.indexOf('EPOCH');
 
-        if not success:
-            name, l1, l2 = fetch_celestrak_tle_by_norad(norad)
-            if l1:
-                entry.update({'name': name or '', 'tle_line1': l1, 'tle_line2': l2 or ''})
-                success = True
+        const rows = lines.slice(1).map(line => {
+          const cols = line.split(',');
+          return {
+            name: cols[nameIdx] || '',
+            norad: cols[noradIdx] || '',
+            constellation: cols[constIdx] || '',
+            country: cols[countryIdx] || '',
+            inclination: cols[incIdx] || '',
+            meanMotion: cols[mmIdx] || '',
+            epoch: cols[epochIdx] || ''
+          };
+        }).filter(r => r.norad);
 
-        if success:
-            watchlist_data.append(entry)
-        rate_limit_sleep(1)
+        rows.sort((a, b) => a.name.localeCompare(b.name));
 
-    log(f"Watchlist complete: {len(watchlist_data)} objects")
+        tbody.innerHTML = rows.slice(0, 500).map(r => `
+          <tr>
+            <td>${r.name}</td>
+            <td>${r.norad}</td>
+            <td>${r.constellation}</td>
+            <td class="country-${r.country}">${r.country}</td>
+            <td>${r.inclination ? parseFloat(r.inclination).toFixed(2) : ''}</td>
+            <td>${r.meanMotion ? parseFloat(r.meanMotion).toFixed(4) : ''}</td>
+            <td>${r.epoch ? r.epoch.slice(0, 16) : ''}</td>
+          </tr>
+        `).join('');
 
-with open(WATCHLIST_JSON, 'w') as f:
-    json.dump(watchlist_data, f, indent=2)
+        status.textContent = `Showing ${Math.min(rows.length, 500)} of ${rows.length} objects.`;
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="7">Could not load data.</td></tr>';
+        status.textContent = '';
+      }
+    }
 
-# =============================================================================
-# CHANGE DETECTION + NOTES GENERATION
-# =============================================================================
-notes = []
-now_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-notes.append(f"Patriot Orbit Update — {now_str}")
-notes.append("")
-
-if all_dfs:
-    master = pd.concat(all_dfs, ignore_index=True)
-    master = master[master['COUNTRY_CODE'].isin(ALLOWED_COUNTRIES)].copy()
-    master = safe_numeric(master, ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS'])
-
-    log(f"Master dataframe assembled: {len(master)} objects")
-
-    changes = []
-    if previous is not None and not previous.empty and 'NORAD_CAT_ID' in previous.columns:
-        # Only use columns that actually exist in the previous snapshot
-        prev_cols = ['NORAD_CAT_ID']
-        for col in ['INCLINATION', 'MEAN_MOTION', 'SEMIMAJOR_AXIS']:
-            if col in previous.columns:
-                prev_cols.append(col)
-
-        try:
-            merged = master.merge(
-                previous[prev_cols],
-                on='NORAD_CAT_ID',
-                how='left',
-                suffixes=('', '_prev')
-            )
-
-            # Inclination shifts
-            if 'INCLINATION_prev' in merged.columns:
-                mask = (merged['INCLINATION'] - merged['INCLINATION_prev']).abs() > INCLINATION_THRESHOLD
-                for _, row in merged[mask].iterrows():
-                    if pd.notna(row['INCLINATION']) and pd.notna(row['INCLINATION_prev']):
-                        changes.append(
-                            f"- {row.get('OBJECT_NAME', 'UNK')} (NORAD {row['NORAD_CAT_ID']}): "
-                            f"Inclination {row['INCLINATION_prev']:.2f}° → {row['INCLINATION']:.2f}°"
-                        )
-
-            # Mean motion shifts
-            if 'MEAN_MOTION_prev' in merged.columns:
-                mask = (merged['MEAN_MOTION'] - merged['MEAN_MOTION_prev']).abs() > MEAN_MOTION_THRESHOLD
-                for _, row in merged[mask].iterrows():
-                    if pd.notna(row['MEAN_MOTION']) and pd.notna(row['MEAN_MOTION_prev']):
-                        changes.append(
-                            f"- {row.get('OBJECT_NAME', 'UNK')} (NORAD {row['NORAD_CAT_ID']}): "
-                            f"Mean motion {row['MEAN_MOTION_prev']:.4f} → {row['MEAN_MOTION']:.4f}"
-                        )
-
-            log(f"Change detection complete: {len(changes)} significant shifts found")
-        except Exception as e:
-            log(f"Change detection error (continuing): {e}")
-
-    # Persist snapshots
-    master.to_csv(PREV_SNAPSHOT, index=False)
-    master.to_csv(MASTER_CSV, index=False)
-    log(f"Saved {MASTER_CSV} and {PREV_SNAPSHOT}")
-
-    # Build notes content
-    if changes:
-        notes.append("Significant Orbital Changes Detected:")
-        notes.extend(changes[:25])
-        if len(changes) > 25:
-            notes.append(f"- ...and {len(changes) - 25} more changes")
-        notes.append("")
-    else:
-        notes.append("No significant orbital changes detected this run.")
-        notes.append("")
-
-    # Country / constellation summaries
-    china = master[master['COUNTRY_CODE'] == 'PRC']
-    notes.append(f"Chinese Activity: {len(china)} objects tracked.")
-    if not china.empty:
-        yaogan = china[china['CONSTELLATION'] == 'YAOGAN']
-        notes.append(f"- Yaogan: {len(yaogan)} objects (includes known debris and triplets).")
-        for const in sorted(china['CONSTELLATION'].unique()):
-            count = len(china[china['CONSTELLATION'] == const])
-            if const != 'YAOGAN':
-                notes.append(f"- {const}: {count} objects")
-        notes.append("")
-
-    russia = master[master['COUNTRY_CODE'] == 'CIS']
-    notes.append(f"Russian Activity: {len(russia)} objects tracked.")
-    if not russia.empty:
-        notes.append("- Includes GLONASS navigation and COSMOS reconnaissance satellites.")
-        for const in sorted(russia['CONSTELLATION'].unique()):
-            count = len(russia[russia['CONSTELLATION'] == const])
-            notes.append(f"- {const}: {count} objects")
-        notes.append("")
-
-    nk = master[master['COUNTRY_CODE'] == 'NKOR']
-    notes.append(f"North Korean Activity: {len(nk)} objects tracked.")
-    if not nk.empty:
-        notes.append("- Malligyong-1 remains the primary active object.")
-        notes.append("")
-
-    iran = master[master['COUNTRY_CODE'] == 'IRAN']
-    notes.append(f"Iranian Activity: {len(iran)} objects tracked.")
-    if not iran.empty:
-        notes.append("- Includes Noor military satellites and related objects.")
-        notes.append("")
-
-    notes.append(f"Total objects in master file: {len(master)}")
-    notes.append("")
-    notes.append("Pull statistics:")
-    for name, count, source, elapsed in pull_stats:
-        notes.append(f"  {name:<16} {count:>5} objects  ({source}, {elapsed:.1f}s)")
-
-else:
-    notes.append("No data pulled this run (both Space-Track and CelesTrak failed).")
-    log("WARNING: No data retrieved from either source.")
-
-# Write notes
-with open(NOTES_FILE, 'w') as f:
-    f.write('\n'.join(notes))
-log(f"Wrote {NOTES_FILE}")
-
-# Optional: simple HTML snippet for the site (major movements)
-if changes:
-    html_lines = ['<ul class="movements">']
-    for c in changes[:15]:
-        html_lines.append(f"  <li>{c[2:]}</li>")
-    if len(changes) > 15:
-        html_lines.append(f"  <li>...and {len(changes) - 15} more</li>")
-    html_lines.append('</ul>')
-    with open(HTML_SNIPPET, 'w') as f:
-        f.write('\n'.join(html_lines))
-    log(f"Wrote optional {HTML_SNIPPET}")
-
-log("Run complete.")
+    loadNotes();
+    loadMovements();
+    loadTable();
+  </script>
+</body>
+</html>
