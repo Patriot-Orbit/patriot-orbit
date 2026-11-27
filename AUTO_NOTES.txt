@@ -1,14 +1,6 @@
-Patriot Orbit Update — 2026-11-27 11:04 UTC
+Patriot Orbit Update — 2026-11-27 12:08 UTC
 
-Significant Orbital Changes Detected:
-- YAOGAN-33 02 (NORAD 53698): Mean motion 14.5877 → 14.5859
-- YAOGAN-50 02 DEB (NORAD 100598): Mean motion 14.1711 → 14.1723
-- YAOGAN-50 02 DEB (NORAD 100807): Mean motion 14.0366 → 14.0381
-- YAOGAN-50 02 DEB (NORAD 100818): Mean motion 13.9660 → 13.9671
-- YAOGAN-50 02 DEB (NORAD 101054): Mean motion 14.1194 → 14.1268
-- YAOGAN-50 02 DEB (NORAD 101405): Mean motion 14.2783 → 14.2797
-- QIANFAN-47 (NORAD 62248): Mean motion 13.4584 → 13.4891
-- FENGYUN 1C DEB (NORAD 29771): Mean motion 15.5406 → 15.5420
+No significant orbital changes detected this run.
 
 Chinese Activity: 2616 objects tracked.
 - Yaogan: 256 objects (includes known debris and triplets).
@@ -36,18 +28,18 @@ Iranian Activity: 3 objects tracked.
 Total objects in master file: 5574
 
 Pull statistics:
-  YAOGAN             256 objects  (Space-Track, 0.3s)
-  BEIDOU              56 objects  (Space-Track, 0.3s)
+  YAOGAN             256 objects  (Space-Track, 0.4s)
+  BEIDOU              56 objects  (Space-Track, 0.4s)
   GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.3s)
   FENGYUN           1946 objects  (Space-Track, 0.4s)
   HAIYANG             10 objects  (Space-Track, 0.4s)
   JILIN               23 objects  (Space-Track, 0.3s)
   TIANHUI             14 objects  (Space-Track, 0.3s)
-  GLONASS            140 objects  (Space-Track, 0.4s)
-  COSMOS            2800 objects  (Space-Track, 0.4s)
-  KANOPUS              5 objects  (Space-Track, 0.3s)
+  GLONASS            140 objects  (Space-Track, 0.3s)
+  COSMOS            2800 objects  (Space-Track, 0.5s)
+  KANOPUS              5 objects  (Space-Track, 0.4s)
   RESURS               9 objects  (Space-Track, 0.3s)
-  MALLIGYONG           1 objects  (Space-Track, 0.4s)
+  MALLIGYONG           1 objects  (Space-Track, 0.3s)
   KHAYYAM              1 objects  (Space-Track, 0.3s)
   SAFIR                2 objects  (Space-Track, 0.3s)
