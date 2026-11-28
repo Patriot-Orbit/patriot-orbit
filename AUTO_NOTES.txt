@@ -1,4 +1,4 @@
-Patriot Orbit Update — 2026-11-28 04:08 UTC
+Patriot Orbit Update — 2026-11-28 05:13 UTC
 
 No significant orbital changes detected this run.
 
@@ -29,17 +29,17 @@ Total objects in master file: 5575
 
 Pull statistics:
   YAOGAN             256 objects  (Space-Track, 0.4s)
-  BEIDOU              56 objects  (Space-Track, 0.4s)
-  GAOFEN              45 objects  (Space-Track, 0.4s)
+  BEIDOU              56 objects  (Space-Track, 0.3s)
+  GAOFEN              45 objects  (Space-Track, 0.3s)
   QIANFAN            266 objects  (Space-Track, 0.3s)
-  FENGYUN           1950 objects  (Space-Track, 0.5s)
-  HAIYANG             10 objects  (Space-Track, 0.4s)
+  FENGYUN           1950 objects  (Space-Track, 0.4s)
+  HAIYANG             10 objects  (Space-Track, 0.3s)
   JILIN               23 objects  (Space-Track, 0.3s)
   TIANHUI             14 objects  (Space-Track, 0.3s)
   GLONASS            140 objects  (Space-Track, 0.3s)
   COSMOS            2797 objects  (Space-Track, 0.4s)
   KANOPUS              5 objects  (Space-Track, 0.3s)
-  RESURS               9 objects  (Space-Track, 0.4s)
-  MALLIGYONG           1 objects  (Space-Track, 0.3s)
+  RESURS               9 objects  (Space-Track, 0.3s)
+  MALLIGYONG           1 objects  (Space-Track, 0.4s)
   KHAYYAM              1 objects  (Space-Track, 0.3s)
   SAFIR                2 objects  (Space-Track, 0.3s)
